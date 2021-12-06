@@ -61,10 +61,10 @@ The control action is a  vector which will then given as an input to the robot c
 
  Robot Class
 
-```mermaid
+mermaid
 graph LR
 A[planner] -->B((+))-->C[controller] --u-->D[robot] --> E[current state] -->B
-```
+
 
 ## To Do List
 Here are some applications that still need to be  implemented
