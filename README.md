@@ -60,6 +60,8 @@ The robot instance needs to be initialised with an initial state (speed and posi
 The control action is a  vector which will then given as an input to the robot calss method ``motion()`` . Inside ``motion`` the equations of motion of the robot are defined and the new state at time t+dt is updateted after the input control is given to the robot
 
  Robot Class
+ 
+ 
 [![](https://mermaid.ink/img/eyJjb2RlIjoiZ3JhcGggTFJcbkFbcGxhbm5lcl0gLS0-QigoKykpLS0-Q1tjb250cm9sbGVyXSAtLXUtLT5EW3JvYm90XSAtLT4gRVtjdXJyZW50IHN0YXRlXSAtLT5CIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRhcmsifSwidXBkYXRlRWRpdG9yIjpmYWxzZSwiYXV0b1N5bmMiOnRydWUsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/edit#eyJjb2RlIjoiZ3JhcGggTFJcbkFbcGxhbm5lcl0gLS0-QigoKykpLS0-Q1tjb250cm9sbGVyXSAtLXUtLT5EW3JvYm90XSAtLT4gRVtjdXJyZW50IHN0YXRlXSAtLT5CIiwibWVybWFpZCI6IntcbiAgXCJ0aGVtZVwiOiBcImRhcmtcIlxufSIsInVwZGF0ZUVkaXRvciI6ZmFsc2UsImF1dG9TeW5jIjp0cnVlLCJ1cGRhdGVEaWFncmFtIjpmYWxzZX0)
 
 
