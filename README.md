@@ -67,9 +67,12 @@ The control action is a  vector which will then given as an input to the robot c
 
 ## To Do List
 Here are some applications that still need to be  implemented
-1. Expand the GJK algorithm so that it can work Circle vs Polygon
+1. Expand the GJK algorithm so that it can work Circle vs Polygon (**DONE**)
 2. Implement the ``Robot.motion()`` method
 3.  Create a function that creates random obstacles, starting from the obstacles primitives
-4. implement RRT algorithm to be added to the ``planners_and_env.py`` module
+4. implement RRT algorithm to be added to the ``planners_and_env.py`` module (**DONE**)
 5. implement Dubins path algorithm to be added to the ``planners_and_env.py`` module
 6. **ESSENTIAL**  test all the functions like collison checks functions 
+7. (**as soon as possible**) RRT should work in configuration space so we will need to sample tuple (x,y,theta) and check that the configurations are close enough. My personal advice. Just change the point in which you mesure the distance between to nodes with D = Euclidean distance + Haar Distance (for the angles)
+8.(*when time comes*) For now our robot is circular shaped with a given radius. We can change that later
+8. implement the ``controller_function`` which takes as an input the refence and the actual position of the robot and gives the control autority 
