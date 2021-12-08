@@ -1,7 +1,6 @@
 import pygame
 import sys
 import numpy as np
-
 from   scipy.spatial import distance
 from   random import randint
 
@@ -19,13 +18,13 @@ def CircleCollision(r1,r2,center1,center2) :
         # -----------OUTPUT------------------
         #  True/False collision?
         # 
-        check_collision = 0
+        check_collision = False
         c1    = np.array([center1[0],center1[1]])
         c2    = np.array([center2[0],center2[1]])
         Delta = np.linalg.norm(c1-c2)
         limit = r1+r2
-        if Delta < limit:
-            check_collision=1
+        if Delta <= limit:
+            check_collision=True
             
         return check_collision
 
@@ -34,7 +33,8 @@ def CircleCollision(r1,r2,center1,center2) :
 def support_vector(direction,points) :
     # this functions finds the support
     # vector in a given direction for a given
-    # set of points.
+    # set of points. A support vector is the 
+    # vector with highest component in a given direction
     
     # what is the function doing :
     # 1) define a direction (a vector not necessarely normalised)
@@ -50,7 +50,7 @@ def support_vector(direction,points) :
     #
     # direction --->  needs to be a direction 2D
     #                 (list of tuple or list)
-    # return 
+    # OUTPUT 
     #
     # support vector     np.array()
     
@@ -59,11 +59,16 @@ def support_vector(direction,points) :
         direction = np.asarray(direction,dtype=np.float64)
     if type(points).__module__    != np.__name__ :
         points = np.asarray(points,dtype=np.float64)
-        
-    projections   = np.sum(direction*points,axis=1) # list of projections
-    support_indx  = np.argmax(projections) # always return only one index even if you have two equal 
-                                           # max points
-    support_vec   = points[support_indx,:]
+    
+    # accomodate for single point check
+    if len(np.shape(points)) == 1: 
+        support_vec = points
+    
+    else :
+        projections   = np.sum(direction*points,axis=1) # list of projections
+        support_indx  = np.argmax(projections) # always return only one index even if you have two equal                                   # max points
+        support_vec   = points[support_indx,:]
+    
     return support_vec
 
 
@@ -80,8 +85,12 @@ def minkowskiDifference(verticesA,verticesB):
     # -----------OUTPUT------------------
     # minkVert     minkowsky difference    -->  np.array((N*M,2))
     
-    
-    minkVert = np.array([va-vb for va in verticesA for vb in verticesB])
+    if len(np.shape(verticesA)) == 1 :
+        minkVert = np.array([verticesA-vb for vb in verticesB])
+    elif len(np.shape(verticesB)) == 1 :
+        minkVert = np.array([va - verticesB for va in verticesA])
+    else :   
+        minkVert = np.array([va-vb for va in verticesA for vb in verticesB])
     
     return minkVert
     
@@ -197,7 +206,7 @@ def checkSimplex(simplex):
                 return simplex,searchDir2,inside 
             
             else :
-                simplex  = AO
+                simplex  = A
                 inside   = 0
                 return simplex,AO,inside 
         
@@ -212,47 +221,52 @@ def checkSimplex(simplex):
         
              
         
-def GJK(verticesA,verticesB):
+def GJK(verticesA,verticesB,radius=0):
     # ----------DESCRIPTION--------------
     # GJK collision check algorithm
     # 
     # -----------INPUT-------------------
     #  verticesA      first polygon vertices  -->  np.array((N,2))
     #  verticesB      first polygon vertices  -->  np.array((M,2))
+    #  radius         radius of the circle    -->  float (non-negative)
+    #                 in case polygon vs circle         
+    #
+    #  note --> radius : in case a circular obstacle is checked agains a polygon
     # -----------OUTPUT------------------
     # searchDirection                ---> np.array(2,)
     # inside      is the origin in   ---> 0/1 False/True
     #             the simplex
     # simplex    updated simplex     ---> [np.array(2,)]
     
+    # note 
     minkdiff          = minkowskiDifference(verticesA,verticesB)
     initial_direction = minkdiff[0,:]
-
-    A             = support_vector(initial_direction,verticesA) - support_vector(-initial_direction,verticesB)
-    simplex       = [A] # initialise simplex list of vectors
-    D             = -A
-    
+    A                 = support_vector(initial_direction,verticesA) - support_vector(-initial_direction,verticesB)
+    simplex           = [A] # initialise simplex list of vectors
+    D                 = -A
     inside   = 0
     max_iter = 1000
     counter  = 0
     while counter < max_iter or inside ==1:
         
-        A       = support_vector(D,verticesA) - support_vector(-D,verticesB)
-        print(A)
-        print(D)
-        # no intersection in this case:
-        # you already moved in the straight direction
-        # to the origin and you didn't pass over it 
-        # so you won't pass it later
-        
-        if np.sum(A*D)<0 :
+        A       = support_vector(D,minkdiff)
+        if np.sum(A*D)<0 and np.sqrt(np.sum(A**2))>radius :
+            # no intersection in this case:
+            # you already moved in the straight direction
+            # to the origin and you didn't pass over it 
+            # so you won't pass it later
+            # note : at final iteration abs(A*D) is the 
+            # distance between the two closest points
+            
             return 0 # collision. Stop and exit
+        
+        elif np.sum(A*D)<0 and np.sqrt(np.sum(A**2))<radius :
+             return 1 # circle vs polygon collison
         
         
         # order of the simplex ---> LIFO
         # the last element is the new one
         simplex.append(A)
-        print(simplex)
         simplex,D,inside=checkSimplex(simplex)
         
         if inside :

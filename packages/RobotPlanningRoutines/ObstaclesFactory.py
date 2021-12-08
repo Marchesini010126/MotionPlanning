@@ -1,21 +1,24 @@
 import pygame
 import sys
 import numpy as np
-
 from   scipy.spatial import distance
 from   random import randint
 
 
 # ObstaclesFactory
-# info : Creates a sets sets of random obtscles
+# Description : 
+# This modules contains functions 
+# used to create random obstacles 
+# in a pygame environemtn 
+ 
 
-# obstacle :
+# obstacle definition :
 # 
-# It is a dictionary constaining the key words that
+# It is a dictionary constaining the keywords that
 # are required to define the obstacle in space 
 # and define its color 
 #
-# keywords ---> 'center'     center                              tuple
+# keywords ---> 'center'     center                              np.array()
 #               'vertices'   vertices                            np.array
 #               'color'      color                               tuple (R,G,B)
 #               'radius'     bounding radious for the obstacle   float
@@ -23,14 +26,6 @@ from   random import randint
 #                     
 # note : for circular obstacles the vertices variable is equal to the center location
 #        and the bounding radious is euqal to the radious itself
-
-
-# Description
-#
-# INPUT
-#
-#
-# OUTPUT
 
 def createNpolygon(N,r,center=np.array([0,0]),color=(250,0,0)) :
     

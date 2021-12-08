@@ -17,6 +17,9 @@ from RobotPlanningRoutines.CollisionChecks import CircleCollision
 
 screen_width  = 800 
 screen_height = 600
+start         = (50, 50)
+goal          = (1950, 1150)
+screenDimension = (screen_width,screen_height)
 screen        = pygame.display.set_mode((screen_width, screen_height)) 
 clock         = pygame.time.Clock() # clock object to monitor data framing 
 running       = True                # infinite loop initialization parameter
@@ -51,7 +54,7 @@ obstacles_list = [polygon1,circle1,rect_rot]
 #        and the bounding radious is euqal to the radious itself
 
 # initialise map enviroment
-motionMap = EnvMap()
+motionMap = EnvMap(screenDimension)
 motionMap.add_obstacles(obstacles_list)
 
 

@@ -6,52 +6,55 @@ from matplotlib.collections import PatchCollection
 
 from RobotPlanningRoutines.planners_and_env import EnvMap
 from RobotPlanningRoutines.CollisionChecks  import CircleCollision
-from RobotPlanningRoutines.CollisionChecks  import GJK
+from RobotPlanningRoutines.CollisionChecks  import GJK,minkowskiDifference
 
 
 
 # Use the simple circcle collision check between two polygonal obstacles
 
 n_sides       = 3
-center1       = np.array([1,2])
-center2       = np.array([1,2])
-bound_radius  = 3
+center1       = np.array([0,0])
+bound_radius  = 30
 color         = (10,200,0)
 
 # obstacles definition
 polygon1       = factory.createNpolygon(n_sides,bound_radius,center1,color)
-polygon2       = factory.createNpolygon(n_sides,2*bound_radius,center2,color)
+point_check    = np.array([-35,0])
 
 # obtain vertices
 
 vertices_pol1 = polygon1['vertices']
-vertices_pol2 = polygon2['vertices']
+
 
 
 p1 = Polygon(vertices_pol1, facecolor = 'k')
-p2 = Polygon(vertices_pol2, facecolor = 'k')
 
-pp = PatchCollection([p1,p2], alpha=1)
+mkdiff = minkowskiDifference(vertices_pol1,point_check)
+print(np.shape(mkdiff))
+p2 = Polygon(mkdiff, facecolor = 'k')
 
 fig,ax = plt.subplots()
+ax.add_patch(p1)
 circle1=plt.Circle(tuple(polygon1['center']),polygon1['radius'],fill=False)
-circle2=plt.Circle(tuple(polygon2['center']),polygon2['radius'],fill=False)
+circle2=plt.Circle(tuple(point_check),10,fill=True)
 ax.add_patch(circle1)
 ax.add_patch(circle2)
-ax.add_collection(pp)
-ax.set_xlim([-10,10])
-ax.set_ylim([-10,10])
+ax.set_xlim([-60,60])
+ax.set_ylim([-60,60])
+plt.show()
+
+fig,ax = plt.subplots()
+ax.add_patch(p2)
+ax.set_xlim([-60,60])
+ax.set_ylim([-60,60])
 plt.show()
 
 
 ## Check collision using bounding circles 
 
 bound_radius1 = polygon1['radius']
-bound_radius2 = polygon2['radius']
 
-checkCollsion    = CircleCollision(bound_radius1,bound_radius2,center1,center2)
-checkCollsionGJK = GJK(vertices_pol1 ,vertices_pol2)
-print('Circle Collision Result  : {}'.format(checkCollsion))
+checkCollsionGJK = GJK(vertices_pol1 ,point_check,10)
 print('GJK Collision Result     : {}'.format(checkCollsionGJK))
 
 
