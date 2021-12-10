@@ -8,13 +8,23 @@ from matplotlib import pyplot as plt
 # res = samples
 
 def get_circles(x, y, theta, R = 5.):
-    x_c1 = R * np.cos(theta + np.pi/2)
-    y_c1 = R * np.sin(theta + np.pi/2)
+    x_c1 = x + R * np.cos(theta + np.pi/2)
+    y_c1 = y + R * np.sin(theta + np.pi/2)
 
-    x_c2 = R * np.cos(theta - np.pi / 2)
-    y_c2 = R * np.sin(theta - np.pi / 2)
+    x_c2 = x + R * np.cos(theta - np.pi / 2)
+    y_c2 = y + R * np.sin(theta - np.pi / 2)
 
-    return (x_c1, y_c1), (x_c2, y_c2)
+    # Plot the circles
+    angles = np.arange(0,2*np.pi+0.1, 0.1)
+    plt.plot(R * np.cos(angles) + x_c1, R * np.sin(angles) + y_c1,'-.', 'b')
+    plt.plot(R * np.cos(angles) + x_c2, R * np.sin(angles) + y_c2, '-.', 'r')
+    plt.plot(x, y, 'x')
+    plt.plot(x_c1, y_c1, '.', 'b')
+    plt.plot(x_c2, y_c2, '.', 'r')
+
+    plt.show()
+
+    return (x_c1, y_c1), (x_c2, y_c2), R
 
 
 # TESTS
@@ -24,9 +34,4 @@ theta = np.pi/6
 
 c1, c2 = get_circles(x, y, theta)
 
-circle1 = plt.Circle(c1, radius=5.)
-plt.add_artist(circle1)
-plt.show()
-
-print(circle1)
 
