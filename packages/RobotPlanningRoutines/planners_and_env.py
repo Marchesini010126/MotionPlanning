@@ -32,7 +32,7 @@ class EnvMap():
         
         # screen dimension
         self.MapDimensions   = MapDimensions
-        self.Maph, self.Mapw = self.MapDimensions
+        self.Mapw,self.Maph = self.MapDimensions
         
         self.obstacle_list   = None  #list of obstacles
         
@@ -267,10 +267,15 @@ class RRTGraph:
         self.x = []
         self.y = []
         self.parent = []
+        self.cost   =[]
+        
         # initialize tree
         self.x.append(x)
         self.y.append(y)
         self.parent.append(0)
+        self.cost.append(0)
+        
+        
         # obstacles
         self.obstacles = obsList
         # path
@@ -321,7 +326,17 @@ class RRTGraph:
 
     def removeEdge(self, n):
         self.parent.pop(n)
-
+    
+    def addCost(self, n,distance) :
+        self.cost.insert(n,self.cost[self.parent[n]]+distance)
+    
+    def removeCost(self, n) :
+        self.cost.pop(n)
+    
+    def getCost(self, n) :
+        return self.cost[n]
+        
+    
     def numberOfNodes(self):
         return len(self.x)
 
@@ -388,10 +403,22 @@ class RRTGraph:
         else:
             self.addEdge(n1, n2)
             return True
-
+    
+    def rebase_connection(self,n1,n2) :
+        (x1, y1) = (self.x[n1], self.y[n1])
+        (x2, y2) = (self.x[n2], self.y[n2])
+        if self.crossObstacle(x1, x2, y1, y2):
+            return False
+        else:
+            return True
+        
+        
+        
     def step(self, nnear, nrand, dmax = 35):
         d = self.distance(nnear, nrand)
+        cost = d
         if d > dmax:
+            cost = dmax
             u = dmax/d
             (xnear, ynear) = (self.x[nnear], self.y[nnear])
             (xrand, yrand) = (self.x[nrand], self.y[nrand])
@@ -405,8 +432,33 @@ class RRTGraph:
                 self.goalFlag = True
             else:
                 self.addNode(nrand, x, y)
+        return cost
 
-
+    def rebase(self) :
+        # optimal radious to be chnaged in case higher dimension is
+        # searched for 
+        gamma            = 100# by chance. Good papameter not found
+        reabse_radius    = gamma*np.sqrt(np.log(self.numberOfNodes())/self.numberOfNodes())**(1/2)
+        last_node        =  self.numberOfNodes()-1
+        mincost          =  self.getCost(last_node) # cost of the last added node
+        rebase_candidate = []
+        for node in range(len(self.cost)-1) : # exclude last node from search
+            dist = self.distance(node,last_node)
+            if dist < reabse_radius :
+                if dist + self.getCost(node) < mincost :
+                    rebase_candidate.append(node)
+                    mincost          =  dist + self.getCost(node)  
+                    
+        if len(rebase_candidate) > 0 : 
+           
+           isfree   = self.rebase_connection(rebase_candidate[-1], last_node)
+           if  isfree : # no crossing obstacle, so I can connect
+              self.removeEdge(last_node)
+              self.removeCost(last_node)
+              self.addEdge(rebase_candidate[-1],last_node)
+              self.addCost(last_node,mincost)      
+        return self.x, self.y, self.parent
+    
     def pathToGoal(self):
         if self.goalFlag:
             self.path = []
@@ -429,8 +481,10 @@ class RRTGraph:
         n = self.numberOfNodes()
         self.addNode(n, ngoal[0], ngoal[1])
         nnear = self.nearest(n)
-        self.step(nnear, n)
-        self.connect(nnear, n)
+        cost=self.step(nnear, n)
+        isfree=self.connect(nnear, n)
+        if  isfree : # no crossing obstacle, so I can connect
+                self.addCost(n,cost)
         return self.x, self.y, self.parent
 
     def expand(self):
@@ -439,12 +493,12 @@ class RRTGraph:
         self.addNode(n, x, y)
         if self.isFree():
             xnearest = self.nearest(n)
-            self.step(xnearest, n)
-            self.connect(xnearest, n)
+            cost     = self.step(xnearest, n)
+            isfree   = self.connect(xnearest, n)
+            if  isfree : # no crossing obstacle, so I can connect
+                self.addCost(n,cost)
         return self.x, self.y, self.parent
 
-    def cost(self):
-        pass
 
     def B_spline(self, coordinates):
         x = []

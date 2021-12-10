@@ -6,7 +6,7 @@ from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTGraph,Robot
 from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
-dimensions = (800, 600)
+dimensions = (1200, 600)
 start      = (0, 0)
 goal       = (600, 500)
 obsDim     = 50
@@ -20,7 +20,7 @@ pygame.init()
 
 motionMap            = EnvMap(start,goal,dimensions)
 myRobot              = Robot(start_loc=start,radius=20)
-randomObstacles_list = motionMap.createRandomMap(33,['polygon','rectangle'])
+randomObstacles_list = motionMap.createRandomMap(20,['polygon','rectangle'])
 
 RRTpathFinder = RRTGraph(start, goal,dimensions,motionMap.get_obstacles(),myRobot)
 
@@ -44,17 +44,15 @@ while running:
         pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
     else:
         x, y, parent = RRTpathFinder.expand()
+        x, y, parent = RRTpathFinder.rebase()
         pygame.draw.circle(motionMap.map, motionMap.grey, (x[-1], y[-1]), motionMap.nodeRad+2, 0)
         pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
     if i % 10 == 0:
         pygame.display.update()
         if RRTpathFinder.pathToGoal() :
-    
+           motionMap.drawPath(RRTpathFinder.getPathCoords())
     #smooth.append(RRTpathFinder.getPathCoords())
-
     i += 1
-
-    motionMap.drawPath(RRTpathFinder.getPathCoords())
 
 
 
