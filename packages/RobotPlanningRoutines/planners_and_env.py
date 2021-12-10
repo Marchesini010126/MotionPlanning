@@ -75,29 +75,30 @@ class EnvMap():
 
 class Robot():
     # initialise the robot
-    def __init__(self,x0=0,y0=0,thrust=10,type='circle',dimension=20) :
+    def __init__(self,x0=0,y0 = 0,type='circle',dimension=20) :
         
         # state of the system
         self.x0      = x0    # m     x of the baricenter
         self.y0      = y0    # m     y of the baricenter
         self.vx0     = 0.0   # m/s
-        self.vy0     = 0.0   # m/s
-        self.state   = np.array([self.x0,self.y0,self.vx0,self.vy0])
+        self.yaw0    = 0.0   # rad   angle of the car with the global frame (0 = aligned with x-axis)
+        self.angle0  = 0.0   # rad   angle of the wheels with local x-axis (0 = forward, negative = left).
+                             #       Combined w/ velocity it causes yaw rate
+        self.state   = np.array([self.x0,self.y0,self.vx0,self.angle0])
          
-        # dynamic parameters 
-        self.thrust  = thrust # N  
-        self.dt      = 0.01 # s         # integration step
-        self.mass    = 10   # kg        # mass
-        self.gravity = 9.81 # pixel/s2      # gravity acceleration
-        self.type    = 'type'   
-        
-        self.radius  = 20 # add capability to change it 
+        # dynamic parameters
+        self.dt        = 0.01 # s         # integration step
+        self.mass      = 10   # kg        # mass
+        self.type      = 'type'
+        self.max_angle = np.pi / 8        # rad   max steering angle of the wheels
+        self.radius    = 20               # add capability to change it
+        self.L         = 3                # m   length of wheel base
         # available_shapes = {'rectangle','circle','polygon'}
         # factory          = ObstaclesFactory()  
         # if self.type == 'rectangle' :
         #     pass
                       
-    #  here the equaltions of motion are defined
+    #  here the equations of motion are defined
     def motion(self) :
         
         # ----------DESCRIPTION--------------
@@ -107,22 +108,31 @@ class Robot():
         # NONE
         # -----------OUTPUT------------------
         # updates state of the system
-        
-        
-        # equations of motion for the mall
-        vmax = 20  # m/s # upper limit of the speed
-        vmin = 0   # m/s # loer limit of the speed
-        self.vx0 = self.vx0 + self.thrust/self.mass*self.dt
-        self.vy0 = self.vy0 + self.gravity*self.dt
-        # check speed
-        if np.abs(self.vx0) > vmax :
-            self.thrust  = 0
-        if np.abs(self.vy0) > vmax :
-            self.gravity  = 0 
-            
-        self.x0  = self.x0  + self.vx0*self.dt
-        self.y0  = self.y0  + self.vy0*self.dt
-        
+
+        # Inspired by https://github.com/winstxnhdw/KinematicBicycleModel/blob/main/kinematic_model.py
+
+        x_dot = self.vx0 * np.cos(self.yaw0)
+        y_dot = self.vx0 * np.sin(self.yaw0)
+        yaw_rate = self.vx0 * np.tan(self.angle0) / self.L
+
+        # Compute the final state
+        self.x0 += x_dot * self.dt
+        self.y0 += y_dot * self.dt
+        self.yaw0 += yaw_rate * self.dt
+
+    def change_angle(self, angle):
+        max_angle = self.max_angle
+
+        # Keep angle within allowed angles
+        if angle > max_angle:
+            angle = max_angle
+        elif angle < -max_angle:
+            angle = -max_angle
+
+        # Update the angle
+        self.angle0 = angle
+        # Update the state
+        self.state = np.array([self.x0,self.y0,self.vx0,self.angle0])
         
     # draw the robot on the screen
     def draw_robot(self,screen):

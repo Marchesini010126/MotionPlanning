@@ -6,9 +6,9 @@ from scipy import interpolate
 import numpy as np
 
 def main():
-    dimensions = (1200, 2000)
+    dimensions = (750, 1200)
     start = (50, 50)
-    goal = (1950, 1150)
+    goal = (1150, 700)
     obsDim = 50
     obsNum = 200
     i = 0
