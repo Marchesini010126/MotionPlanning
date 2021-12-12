@@ -19,7 +19,7 @@ color         = (10,200,0)
 
 # obstacles definition
 polygon1       = factory.createNpolygon(n_sides,bound_radius,center1,color)
-point_check    = np.array([-35,0])
+point_check    = np.array([13,10])
 
 # obtain vertices
 
@@ -32,7 +32,7 @@ p1 = Polygon(vertices_pol1, facecolor = 'k')
 mkdiff = minkowskiDifference(vertices_pol1,point_check)
 print(np.shape(mkdiff))
 p2 = Polygon(mkdiff, facecolor = 'k')
-
+print(mkdiff)
 fig,ax = plt.subplots()
 ax.add_patch(p1)
 circle1=plt.Circle(tuple(polygon1['center']),polygon1['radius'],fill=False)
@@ -43,11 +43,7 @@ ax.set_xlim([-60,60])
 ax.set_ylim([-60,60])
 plt.show()
 
-fig,ax = plt.subplots()
-ax.add_patch(p2)
-ax.set_xlim([-60,60])
-ax.set_ylim([-60,60])
-plt.show()
+
 
 
 ## Check collision using bounding circles 

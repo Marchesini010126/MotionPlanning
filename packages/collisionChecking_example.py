@@ -14,7 +14,7 @@ from RobotPlanningRoutines.CollisionChecks  import GJK
 
 n_sides       = 3
 center1       = np.array([1,2])
-center2       = np.array([1,2])
+center2       = np.array([3,2])
 bound_radius  = 3
 color         = (10,200,0)
 

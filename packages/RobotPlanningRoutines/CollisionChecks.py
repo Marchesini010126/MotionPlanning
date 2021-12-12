@@ -178,7 +178,7 @@ def checkSimplex(simplex):
         
     if len(simplex) == 3:
         
-        A  = simplex[-1]  # fist in
+        A  = simplex[2]  # fist in
         B  = simplex[0]   # last out
         C  = simplex[1]   # vector from A to B
         AC = C-A
@@ -241,6 +241,7 @@ def GJK(verticesA,verticesB,radius=0):
     # note 
     minkdiff          = minkowskiDifference(verticesA,verticesB)
     initial_direction = minkdiff[0,:]
+    
     A                 = support_vector(initial_direction,verticesA) - support_vector(-initial_direction,verticesB)
     simplex           = [A] # initialise simplex list of vectors
     D                 = -A
@@ -250,7 +251,11 @@ def GJK(verticesA,verticesB,radius=0):
     while counter < max_iter or inside ==1:
         
         A       = support_vector(D,minkdiff)
-        if np.sum(A*D)<0 and np.sqrt(np.sum(A**2))>radius :
+        if np.sum(A*D)<0  :
+            versor      = D/np.linalg.norm(D)
+            minDistance = abs(np.sum(A*versor))
+            
+            if minDistance >= radius:
             # no intersection in this case:
             # you already moved in the straight direction
             # to the origin and you didn't pass over it 
@@ -258,10 +263,10 @@ def GJK(verticesA,verticesB,radius=0):
             # note : at final iteration abs(A*D) is the 
             # distance between the two closest points
             
-            return 0 # collision. Stop and exit
+              return 0 # collision. Stop and exit
         
-        elif np.sum(A*D)<0 and np.sqrt(np.sum(A**2))<radius :
-             return 1 # circle vs polygon collison
+            else : 
+              return 1 # circle vs polygon collison
         
         
         # order of the simplex ---> LIFO
@@ -273,5 +278,3 @@ def GJK(verticesA,verticesB,radius=0):
             return 1
         
         counter = counter +1
-        
-    pass

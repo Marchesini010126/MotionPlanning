@@ -263,7 +263,7 @@ class RRTGraph:
         self.start = start
         self.goal = goal
         self.goalFlag = False
-        self.maph, self.mapw = MapDimensions
+        self.mapw, self.maph, = MapDimensions
         self.x = []
         self.y = []
         self.parent = []
@@ -289,7 +289,7 @@ class RRTGraph:
         self.robot = RobotClass # np.array as for obstacles 
         
     
-    def check_feasibility(self):
+    def check_clear_startgoal(self):
         # eliminated the obstacles that are 
         # exactly on the goal or the start position
         
@@ -301,10 +301,9 @@ class RRTGraph:
         
         for n,obstacle in enumerate(self.obstacles) :
             
-            check1    = np.linalg.norm(obstacle['center']-start)
-            check2    = np.linalg.norm(obstacle['center']-goal)
-            tolerance = 25
-            if check1< tolerance + obstacle['radius'] or check2< tolerance+obstacle['radius'] :
+            check1    = CollisionChecks.CircleCollision(obstacle['radious'],self.robot.radius,obstacle['center'],start)
+            check2    = CollisionChecks.CircleCollision(obstacle['radious'],self.robot.radius,obstacle['center'],goal) 
+            if check1 or check2 :
                 self.obstacles.pop(n)
         
         return self.obstacles
@@ -389,9 +388,10 @@ class RRTGraph:
                 y = y1 * u + y2 * (1 - u)
                 robot_pos = np.array([x,y])
                 # hirerchical checking
-                if CollisionChecks.CircleCollision(obstacle['radius'],self.robot.radius,obstacle['center'],robot_pos) :
-                   if CollisionChecks.GJK(robot_pos,obs_vert,radius=self.robot.radius): # the robot is a circle for now. So GJK is polygon vs Circle
-                      return True
+                if x > 0 or x < self.mapw or y >0 or y <self.maph :
+                    if CollisionChecks.CircleCollision(obstacle['radius'],self.robot.radius,obstacle['center'],robot_pos) :
+                        if CollisionChecks.GJK(robot_pos,obs_vert,radius=self.robot.radius): # the robot is a circle for now. So GJK is polygon vs Circle
+                            return True
         return False
 
     def connect(self, n1, n2):
@@ -437,8 +437,8 @@ class RRTGraph:
     def rebase(self) :
         # optimal radious to be chnaged in case higher dimension is
         # searched for 
-        gamma            = 100# by chance. Good papameter not found
-        reabse_radius    = gamma*np.sqrt(np.log(self.numberOfNodes())/self.numberOfNodes())**(1/2)
+        gamma            =  400# by chance. Good papameter not found
+        reabse_radius    =  gamma*np.sqrt(np.log(self.numberOfNodes())/self.numberOfNodes())**(1/2)
         last_node        =  self.numberOfNodes()-1
         mincost          =  self.getCost(last_node) # cost of the last added node
         rebase_candidate = []

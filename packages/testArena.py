@@ -7,8 +7,8 @@ from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
 dimensions = (1200, 600)
-start      = (0, 0)
-goal       = (600, 500)
+start      = (10, 10)
+goal       = (1000, 450)
 obsDim     = 50
 obsNum     = 200
 i          = 0
@@ -16,11 +16,12 @@ t1         = 0
 coords     = []
 smooth     = []
 running    = True
+robot_rad = 10
 pygame.init()
 
 motionMap            = EnvMap(start,goal,dimensions)
-myRobot              = Robot(start_loc=start,radius=20)
-randomObstacles_list = motionMap.createRandomMap(20,['polygon','rectangle'])
+myRobot              = Robot(start_loc=start,radius=robot_rad)
+randomObstacles_list = motionMap.createRandomMap(30,['polygon','rectangle'])
 
 RRTpathFinder = RRTGraph(start, goal,dimensions,motionMap.get_obstacles(),myRobot)
 
@@ -38,15 +39,15 @@ while running:
     t1 = time.time()
     
     motionMap.draw_startgoal()
-    if i % 10 == 0:
-        x, y, parent = RRTpathFinder.bias(goal)
-        pygame.draw.circle(motionMap.map, motionMap.grey, (x[-1], y[-1]), motionMap.nodeRad+2, 0)
-        pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
-    else:
-        x, y, parent = RRTpathFinder.expand()
-        x, y, parent = RRTpathFinder.rebase()
-        pygame.draw.circle(motionMap.map, motionMap.grey, (x[-1], y[-1]), motionMap.nodeRad+2, 0)
-        pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
+    # if i % 10 == 0:
+    #     x, y, parent = RRTpathFinder.bias(goal)
+    #     pygame.draw.circle(motionMap.map, motionMap.grey, (x[-1], y[-1]), robot_rad, 2)
+    #     pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
+    # else:
+    x, y, parent = RRTpathFinder.expand()
+    x, y, parent = RRTpathFinder.rebase()
+    pygame.draw.circle(motionMap.map, motionMap.grey, (x[-1], y[-1]), robot_rad, 2)
+    pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
     if i % 10 == 0:
         pygame.display.update()
         if RRTpathFinder.pathToGoal() :
