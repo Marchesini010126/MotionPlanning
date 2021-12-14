@@ -8,25 +8,70 @@ from matplotlib import pyplot as plt
 class Dubin:
     def __init__(self, q0, q1, R=1., res=None):
         self.radius = R
+        self.pos0 = np.array(q0[:2])
+        self.pos1 = np.array(q1[:2])
+        self.theta0 = q0[2]
+        self.theta1 = q1[2]
+
+        self.circles0 = get_circles(self.pos0, self.theta0, self.radius)
+        self.circles1 = get_circles(self.pos1, self.theta1, self.radius)
+
+        self.PATHS = np.array([], dtype=tuple)
+
+    def get_path(pos1, circle1, pos2, circle2, R=1.):
+        c1 = circle1[0]
+        c2 = circle2[0]
+
+        # vectors from centers of the circles to position of the states
+        rp1 = pos1 - c1
+        rp2 = pos2 - c2
+
+        # vectors from centers of the circles to their respective tangents
+        t1, t2 = get_tangents(circle1, circle2, R)
+        rt1 = t1 - c1
+        rt2 = t2 - c2
+
+        # compute arclengths
+        a1 = np.arctan2(rt1[1], rt1[0]) - np.arctan2(rp1[1],
+                                                     rp1[0])  # angle from pos to tangent around the circle1 center
+        bool = (np.sign(a1) != circle1[-1])  # check if direction of angle and circle are not identical, eg not both CCW
+        a1 = abs(2 * np.pi * bool - abs(a1))
+
+        a2 = np.arctan2(rp2[1], rp2[0]) - np.arctan2(rt2[1],
+                                                     rt2[0])  # angle from tangent to pos around the circle2 center
+        bool = (np.sign(a2) != circle2[-1])  # check if direction of angle and circle are not identical, eg not both CCW
+        a2 = abs(2 * np.pi * bool - abs(a2))
+
+        return (pos1, a1, t1, t2, a2, pos2, R)
+
+    def paths(self):
+        for circle0 in self.circles0:
+            for circle1 in self.circles1:
+                path = get_path(self.pos0, circle0, self.pos1, circle1, self.radius)
+                length = get_length(path)
+
+                self.PATHS = np.append(self.PATHS, path)
+
+    def plot(self):
+        plot_state(q0, self.circles0, self.radius, 'g')
+        plot_state(q1, self.circles1, self.radius, 'r')
+        plt.gca().set_aspect(1)
+        plt.show()
 
 
-def plot_circle(x, y, R=1., color='r'):
+def plot_circle(pos, R=1., color='r'):
     angles = np.arange(0, 2 * np.pi + 0.1, 0.1)
-    plt.plot(R * np.cos(angles) + x, R * np.sin(angles) + y, '-.', color=color)
+    plt.plot(R * np.cos(angles) + pos[0], R * np.sin(angles) + pos[1], '-.', color=color)
 
-
-def plot_state(q, R=1., color='r'):
-    c1, c2, R = get_circles(q[0], q[1], q[2], R) # c1 is the L-handed circle '1', c2 the R-handed '-1'
-
+def plot_state(q, circles, R=1., color='r'):
     # Plot the circles
-    plot_circle(*c1[:-1], R, color)
-    plot_circle(*c2[:-1], R, color)
+    plot_circle(circles[0][0], R, color)
+    plot_circle(circles[1][0], R, color)
 
-    plt.plot(q[0], q[1], 'x', color=color) # plot robot center
+    plt.plot(q[0], q[1], 'o', color=color) # plot robot center
     plt.quiver(q[0], q[1], np.cos(q[2]), np.sin(q[2]), scale=5) # plot arrow in the direction of orientation
-    plt.plot(*c1[:-1], '+', color=color)
-    plt.plot(*c2[:-1], '_', color=color)
-
+    plt.plot(circles[0][0][0], circles[0][0][1], '+', color=color)
+    plt.plot(circles[1][0][0], circles[1][0][1], '_', color=color)
 
 def rot2d(vec, angle):
     mat = np.array([[np.cos(angle), -np.sin(angle)],
@@ -34,24 +79,19 @@ def rot2d(vec, angle):
     new = mat @ vec
     return new
 
+def get_circles(pos, theta, R = 1.):
+    cl = pos + R * np.array([np.cos(theta + np.pi/2), np.sin(theta + np.pi/2)])
+    cr = pos + R * np.array([np.cos(theta - np.pi / 2), np.sin(theta - np.pi / 2)])
 
-def get_circles(x, y, theta, R = 1.):
-    x_c1 = x + R * np.cos(theta + np.pi/2)
-    y_c1 = y + R * np.sin(theta + np.pi/2)
-
-    x_c2 = x + R * np.cos(theta - np.pi / 2)
-    y_c2 = y + R * np.sin(theta - np.pi / 2)
-
-    return (x_c1, y_c1, 1), (x_c2, y_c2, -1), R
-
+    return (cl, 1), (cr, -1)
 
 def get_tangents(circle1, circle2, R=1.):
     # Note:
     # since the two circles that we are calculating the common tangents for are of the same radius, lots of simplifications can be made.
     # this code would not at all work for the general case of two different sized circles.
 
-    p1 = np.array([*circle1[:-1]])
-    p2 = np.array([*circle2[:-1]])
+    p1 = circle1[0]
+    p2 = circle2[0]
 
     V = p2 - p1 # vector V from center of cirlce 1 to cirlce 2
 
@@ -78,32 +118,23 @@ def get_tangents(circle1, circle2, R=1.):
 
     return t1, t2
 
-def get_path(p1, circle1, p2, circle2, R=1.):
-    c1 = np.array([*circle1[:-1]])
-    c2 = np.array([*circle2[:-1]])
 
-    r1 = np.array([p1]).T - c1
-    r2 = np.array([p2]).T - c2
 
-    t1, t2 = get_tangents(circle1, circle2, R)
+def get_length(path):
+    arc1 = path[0] * path[-1]
+    arc2 = path[-2] * path[-1]
+    L = np.linalg.norm(path[2]-path[1])
+    length = arc1 + arc2 + L
+    return arc1, L, arc2, length
 
-    t = t2 - t1
-    t1 -= c1
-    t2 -= c2
+def sample_points(path, length, n_points):
+    a1_samples = n_samples * (length[0] / length[-1])
+    a2_samples = n_samples * (length[2] / length[-1])
+    L_samples = n_samples - a1_samples - a2_samples
 
-    a1 = np.arctan2(t1[1], t1[0]) - np.arctan2(r1[1], r1[0]) # angle from pos to tangent around the circle1 center
-    bool = (np.sign(a1) != circle1[-1]) # check if direction of angle and circle are not identical, eg not both CCW
-    a1 = abs(2 * np.pi * bool - abs(a1))
-    arc1 = R * a1
+    points = np.zeros(n_samples, 2)
 
-    a2 = np.arctan2(r2[1], r2[0]) - np.arctan2(t2[1], t2[0])  # angle from tangent to pos around the circle2 center
-    bool = (np.sign(a2) != circle2[-1])  # check if direction of angle and circle are not identical, eg not both CCW
-    a2 = abs(2 * np.pi * bool - abs(a2))
-    arc2 = R * a2
 
-    L = np.linalg.norm(t)
-
-    return arc1, L, arc2
 
 
 #################
@@ -112,23 +143,13 @@ def get_path(p1, circle1, p2, circle2, R=1.):
 
 np.random.seed(100)
 
-q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.rand(1)*2*np.pi]
-q1 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.rand(1)*2*np.pi]
+q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
+q1 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
 
 radius = 1.5
 
-plot_state(q0, R=radius, color='g')
-plot_state(q1, R=radius, color='r')
+d = Dubin(q0, q1, radius)
+d.sample()
 
-c0, c1, _ = get_circles(q0[0], q0[1], q0[2], R=radius)
-c2, c3, _ = get_circles(q1[0], q1[1], q1[2], R=radius)
 
-for circle1 in [c0, c1]:
-    for circle2 in [c2, c3]:
-        t1, t2 = get_tangents(circle1,circle2, radius)
-        arc1, L, arc2 = get_path(q0[:2], circle1, q1[:2], circle2, radius)
-        print(arc1, L, arc2)
-        plt.plot([t1[0], t2[0]], [t1[1], t2[1]], '--y')
 
-plt.gca().set_aspect(1)
-plt.show()
