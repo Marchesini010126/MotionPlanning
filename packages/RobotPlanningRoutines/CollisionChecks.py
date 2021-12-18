@@ -248,14 +248,16 @@ def GJK(verticesA,verticesB,radius=0):
     inside   = 0
     max_iter = 1000
     counter  = 0
+    buffer = 0
     while counter < max_iter or inside ==1:
         
         A       = support_vector(D,minkdiff)
         if np.sum(A*D)<0  :
             versor      = D/np.linalg.norm(D)
             minDistance = abs(np.sum(A*versor))
-            
-            if minDistance >= radius:
+
+            if minDistance >= radius and buffer == 1 :
+              
             # no intersection in this case:
             # you already moved in the straight direction
             # to the origin and you didn't pass over it 
@@ -265,9 +267,10 @@ def GJK(verticesA,verticesB,radius=0):
             
               return 0 # collision. Stop and exit
         
-            else : 
+            elif buffer == 1 : 
               return 1 # circle vs polygon collison
-        
+            
+            buffer = buffer + 1
         
         # order of the simplex ---> LIFO
         # the last element is the new one

@@ -18,8 +18,8 @@ bound_radius  = 30
 color         = (10,200,0)
 
 # obstacles definition
-polygon1       = factory.createNpolygon(n_sides,bound_radius,center1,color)
-point_check    = np.array([13,10])
+polygon1       = factory.createRectangle(10,60,center1,color)
+point_check    = np.array([17,0])
 
 # obtain vertices
 
@@ -30,9 +30,9 @@ vertices_pol1 = polygon1['vertices']
 p1 = Polygon(vertices_pol1, facecolor = 'k')
 
 mkdiff = minkowskiDifference(vertices_pol1,point_check)
-print(np.shape(mkdiff))
+
 p2 = Polygon(mkdiff, facecolor = 'k')
-print(mkdiff)
+
 fig,ax = plt.subplots()
 ax.add_patch(p1)
 circle1=plt.Circle(tuple(polygon1['center']),polygon1['radius'],fill=False)

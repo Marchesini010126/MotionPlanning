@@ -74,7 +74,7 @@ def createRectangle(width,height,center=np.array([0,0]),color=(250,0,0)) :
     a3   = [xc - width/2,yc +height/2]
     a4   = [xc - width/2,yc -height/2]
     
-    rad  = np.sqrt(width**2+height**2)
+    rad  = np.sqrt((width/2)**2+(height/2)**2)
     rect = np.array([a1,a2,a3,a4])
     obstacle = {'center': np.array([xc,yc]),'vertices':rect,'color':color,'radius':rad,'type':'polygon'}
     return obstacle 

@@ -24,7 +24,10 @@ else :
 
 class EnvMap():
     
-    def __init__(self,start, goal, MapDimensions) :
+    def __init__(self,
+                 start         : tuple,
+                 goal          : tuple,
+                 MapDimensions : tuple) :
         
         # state initialization
         self.start = start    # initial state --> tuple
@@ -62,7 +65,7 @@ class EnvMap():
         return self.obstacle_list
         
         
-    def add_obstacles(self,new_list_of_obstacles) :
+    def add_obstacles(self, new_list_of_obstacles: dict) :
         # ----------DESCRIPTION--------------
         # add obstacles to current obstacles list
         # -----------INPUT-------------------
@@ -116,10 +119,13 @@ class EnvMap():
     
     def drawPath(self, path):
         # path : list of tuple (x,y)
-        for node in path:
-            pygame.draw.circle(self.map, self.blue, node, self.nodeRad+3, 0)
-     
-    
+        list_of_lines = []
+        for jj in range(len(path)-1):
+            a = pygame.draw.circle(self.map, self.red, path[jj], self.nodeRad+3, 0)
+            b = pygame.draw.line(self.map,self.red,path[jj+1],path[jj])
+            list_of_lines.append(a)
+            list_of_lines.append(b)
+        return list_of_lines
     
     def createRandomMap(self,nObs,type,minRadius=20,maxRadius = 50,maxFaces = 6):
         # ----------DESCRIPTION--------------
@@ -165,8 +171,26 @@ class EnvMap():
         self.obstacle_list = obs_list
         return obs_list 
                 
-                
-            
+    def load_room_map(self):
+        # crates a simple room map accoding to the dimensions of the 
+        # map 
+        
+        # walls
+        wall_thickness = self.Mapw *0.01
+        # wall           = [[(self.Mapw/2,wall_thickness/2),self.Mapw,wall_thickness],
+        #                   [(self.Mapw/2,self.Maph-wall_thickness/2),self.Mapw,wall_thickness],
+        #                   [(wall_thickness/2,self.Maph/2),wall_thickness,self.Mapw],
+        #                   [(self.Mapw-wall_thickness/2,self.Maph/2),wall_thickness,self.Mapw]
+        #                   ] 
+        
+        addOns         = [[(self.Mapw*0.75,self.Mapw*0.75*0.34),self.Mapw*0.25,wall_thickness],
+                          [(self.Mapw*0.12,self.Mapw*0.75*0.56),wall_thickness,self.Mapw*0.25],
+                          [(self.Mapw*0.34,self.Mapw*0.23),wall_thickness,self.Maph*0.56]]
+        
+        wall=addOns
+        obstacles=[ObstaclesFactory.createRectangle(wall[j][1],wall[j][2],np.array(wall[j][0])) for j in range(len(wall))]
+        
+        return obstacles
         
          
 ###############################################################################################
@@ -437,7 +461,7 @@ class RRTGraph:
     def rebase(self) :
         # optimal radious to be chnaged in case higher dimension is
         # searched for 
-        gamma            =  400# by chance. Good papameter not found
+        gamma            =  100# by chance. Good papameter not found
         reabse_radius    =  gamma*np.sqrt(np.log(self.numberOfNodes())/self.numberOfNodes())**(1/2)
         last_node        =  self.numberOfNodes()-1
         mincost          =  self.getCost(last_node) # cost of the last added node
@@ -448,17 +472,53 @@ class RRTGraph:
                 if dist + self.getCost(node) < mincost :
                     rebase_candidate.append(node)
                     mincost          =  dist + self.getCost(node)  
-                    
-        if len(rebase_candidate) > 0 : 
-           
-           isfree   = self.rebase_connection(rebase_candidate[-1], last_node)
-           if  isfree : # no crossing obstacle, so I can connect
-              self.removeEdge(last_node)
-              self.removeCost(last_node)
-              self.addEdge(rebase_candidate[-1],last_node)
-              self.addCost(last_node,mincost)      
+        
+        rebase_candidate.reverse()
+        if len(rebase_candidate) >0:
+            
+            isfree   = self.rebase_connection(rebase_candidate[-1], node)
+            
+            if  isfree : # no crossing obstacle, so connect
+                self.removeEdge(node)
+                self.removeCost(node)
+                self.addEdge(rebase_candidate[-1], node)
+                self.addCost(node,mincost)      
+                
+            
         return self.x, self.y, self.parent
+
     
+        
+    # def rebase(self) :
+    #     # optimal radious to be chnaged in case higher dimension is
+    #     # searched for 
+    #     gamma            =  10000# by chance. Good papameter not found
+    #     reabse_radius    =  gamma*np.sqrt(np.log(self.numberOfNodes())/self.numberOfNodes())**(1/2)
+        
+    #     for nodei in range(self.numberOfNodes()):
+    #       any_candidate = None
+    #       for nodej in range(nodei+1,self.numberOfNodes()) : # exclude last node from search
+            
+    #         dist    = self.distance(nodei,nodej)
+    #         mincost = self.getCost(self.parent[nodei]) + self.distance(nodei,self.parent[nodei])
+    #         if dist < reabse_radius :
+    #             if dist + self.getCost(nodej) < mincost :
+    #                 any_candidate =  nodej
+    #                 mincost       =  dist + self.getCost(nodej)  
+        
+    #     if any_candidate != None :
+        
+    #         isfree   = self.rebase_connection(any_candidate, nodei)
+            
+    #         if  isfree : # no crossing obstacle, so connect
+    #             self.removeEdge(nodei)
+    #             self.removeCost(nodei)
+    #             self.addEdge(any_candidate, nodei)
+    #             self.addCost(nodei,mincost)      
+                
+            
+    #     return self.x, self.y, self.parent
+
     def pathToGoal(self):
         if self.goalFlag:
             self.path = []
