@@ -2,6 +2,41 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 class Dubin:
+
+    """
+    Dubin creates a Dubin's path between states q0 and q1, keeping to the minimum turning radius R, divided in n_samples
+    that can be used for collision checks.
+
+    INPUT:
+        q0: [x0, y0, theta0]    initial state, theta measured CCW positive from global x-axis
+        q1: [x1, y1, theta1]    final state
+
+    FUNCTIONS:
+        get_circles(position, orientation)
+            finds the turn left and turn right circles for a given position and orientation
+            Output: two cirlces of type:
+                tuple: (np.ndarray: center_pos, int: turning_sign)
+
+        get_path(circle0, circle1)
+            finds a single path between two given circles adn their signs
+            Output:
+                path of type:
+                    list: [float: angle to pos0, float: angle to tangent0, ndarray: pos of tangent 0, ndarray: pos of tangent 1, float: angle to tangent1, float: angle to pos1]
+                length of type:
+                    list: [float: angle on circle0, float: distance between tangents on the two cirlces, float: angle on circle 1, float: total distance]
+
+        make_path()
+            finds all paths between two states
+            Output:
+                PATHS of type:
+                    ndarray of shape (num_paths, num_samples, 3):
+                        number of paths found (4) sampled at n_samples points, containing the configurations [x, y, theta]
+
+        plot()
+            plots q0 and q1 states as two vectors (green for inital, red for final) with the turning circles and their signs,
+            if make_path() has been called, the paths are plotted as well, showing up as '.' at each sampled point.
+    """
+
     def __init__(self, q0, q1, R=1., n_samples=None):
         self.radius = R
         self.pos0 = np.array(q0[:2])
@@ -53,14 +88,14 @@ class Dubin:
 
         return [alpha_p, alpha_t, t1, t2, beta_t, beta_p], [d_alpha, L, d_beta, total]
 
-    def make_path(self):
+    def make_path(self): #TODO: add orientations to the returned states
         self.paths = np.zeros((4, self.res, 3))
         i = 0
         for circle0 in self.circles0:
             for circle1 in self.circles1:
                 path, length = self.get_path(circle0, circle1)
 
-                if type(path[2]) == np.ndarray:
+                if type(path[2]) == np.ndarray: #TODO: resolve the overlapping circles issue, for now just check
                     alpha_samples = abs(self.res * length[0]*self.radius//length[-1]).astype(np.int64)
                     beta_samples = abs(self.res * length[2]*self.radius//length[-1]).astype(np.int64)
                     L_samples = (self.res - alpha_samples - beta_samples).astype(np.int64)
@@ -163,7 +198,7 @@ def get_tangents(circle1, circle2, R=1.):
 # TESTS
 #################
 
-np.random.seed(40) # a nice seed is 9, seed for linspace debug eg.40
+np.random.seed(9) # a nice seed is 9, seed for overlapping debug eg.40
 
 q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
 q1 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
