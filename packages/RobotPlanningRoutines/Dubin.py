@@ -6,51 +6,84 @@ from matplotlib import pyplot as plt
 # res = samples
 
 class Dubin:
-    def __init__(self, q0, q1, R=1., res=None):
+    def __init__(self, q0, q1, R=1., n_samples=None):
         self.radius = R
         self.pos0 = np.array(q0[:2])
         self.pos1 = np.array(q1[:2])
         self.theta0 = q0[2]
         self.theta1 = q1[2]
 
-        self.circles0 = get_circles(self.pos0, self.theta0, self.radius)
-        self.circles1 = get_circles(self.pos1, self.theta1, self.radius)
+        self.res = n_samples
 
-        self.PATHS = np.array([], dtype=tuple)
+        self.circles0 = self.get_circles(self.pos0, self.theta0)
+        self.circles1 = self.get_circles(self.pos1, self.theta1)
 
-    def get_path(pos1, circle1, pos2, circle2, R=1.):
+    def get_circles(self, pos, theta):
+        cl = pos + self.radius * np.array([np.cos(theta + np.pi / 2), np.sin(theta + np.pi / 2)])
+        cr = pos + self.radius * np.array([np.cos(theta - np.pi / 2), np.sin(theta - np.pi / 2)])
+
+        return (cl, 1), (cr, -1)
+
+    def get_path(self, circle0, circle1):
+        c0 = circle0[0]
         c1 = circle1[0]
-        c2 = circle2[0]
 
         # vectors from centers of the circles to position of the states
-        rp1 = pos1 - c1
-        rp2 = pos2 - c2
+        rp0 = self.pos0 - c0
+        rp1 = self.pos1 - c1
 
         # vectors from centers of the circles to their respective tangents
-        t1, t2 = get_tangents(circle1, circle2, R)
-        rt1 = t1 - c1
-        rt2 = t2 - c2
+        t1, t2 = get_tangents(circle0, circle1, self.radius)
+        rt1 = t1 - c0
+        rt2 = t2 - c1
+        L = np.linalg.norm(t2-t1) # distance from t1 to t2
 
-        # compute arclengths
-        a1 = np.arctan2(rt1[1], rt1[0]) - np.arctan2(rp1[1],
-                                                     rp1[0])  # angle from pos to tangent around the circle1 center
-        bool = (np.sign(a1) != circle1[-1])  # check if direction of angle and circle are not identical, eg not both CCW
-        a1 = abs(2 * np.pi * bool - abs(a1))
+        # compute arc(lengths)
+        alpha_p = np.arctan2(rp0[1], rp0[0])
+        alpha_t = np.arctan2(rt1[1], rt1[0])
+        d_alpha = alpha_t - alpha_p # angle from pos to tangent around the circle1 center
+        bool = (np.sign(d_alpha) != circle0[-1])  # check if direction of angle and circle are not identical, eg not both CCW
+        d_alpha = circle0[-1] * abs(2 * np.pi * bool - abs(d_alpha))
 
-        a2 = np.arctan2(rp2[1], rp2[0]) - np.arctan2(rt2[1],
-                                                     rt2[0])  # angle from tangent to pos around the circle2 center
-        bool = (np.sign(a2) != circle2[-1])  # check if direction of angle and circle are not identical, eg not both CCW
-        a2 = abs(2 * np.pi * bool - abs(a2))
+        beta_t = np.arctan2(rt2[1], rt2[0])
+        beta_p = np.arctan2(rp1[1], rp1[0])
+        d_beta = beta_p - beta_t  # angle from tangent to pos around the circle2 center
+        bool = (np.sign(d_beta) != circle1[-1])  # check if direction of angle and circle are not identical, eg not both CCW
+        d_beta = circle1[-1] * abs(2 * np.pi * bool - abs(d_beta))
 
-        return (pos1, a1, t1, t2, a2, pos2, R)
+        total = abs(d_alpha * self.radius) + L + abs(d_beta * self.radius)
 
-    def paths(self):
+        return [alpha_p, alpha_t, t1, t2, beta_t, beta_p], [d_alpha, L, d_beta, total]
+
+    def make_path(self):
+        self.paths = np.zeros((4, self.res, 3))
+        i = 0
         for circle0 in self.circles0:
             for circle1 in self.circles1:
-                path = get_path(self.pos0, circle0, self.pos1, circle1, self.radius)
-                length = get_length(path)
+                path, length = self.get_path(circle0, circle1)
 
-                self.PATHS = np.append(self.PATHS, path)
+                alpha_samples = abs(self.res * length[0]*self.radius//length[-1])
+                beta_samples = abs(self.res * length[2]*self.radius//length[-1])
+                L_samples = self.res - alpha_samples - beta_samples
+
+                n = 0
+                for a in np.linspace(path[0], path[0]+length[0], alpha_samples.astype(int)):
+                    p = circle0[0] + self.radius * np.array([np.cos(a), np.sin(a)])
+                    self.paths[i][n][:-1] += p
+                    n += 1
+
+                for l in np.linspace(path[2], path[3], L_samples.astype(int)):
+                    self.paths[i][n][:-1] = l
+                    n += 1
+
+                for b in np.linspace(path[-2], path[-2]+length[-2], beta_samples.astype(int)):
+                    p = circle1[0] + self.radius * np.array([np.cos(b), np.sin(b)])
+                    self.paths[i][n][:-1] += p
+                    n += 1
+
+                i += 1
+
+        return self.paths
 
     def plot(self):
         plot_state(q0, self.circles0, self.radius, 'g')
@@ -78,12 +111,6 @@ def rot2d(vec, angle):
                     [np.sin(angle), np.cos(angle)]])
     new = mat @ vec
     return new
-
-def get_circles(pos, theta, R = 1.):
-    cl = pos + R * np.array([np.cos(theta + np.pi/2), np.sin(theta + np.pi/2)])
-    cr = pos + R * np.array([np.cos(theta - np.pi / 2), np.sin(theta - np.pi / 2)])
-
-    return (cl, 1), (cr, -1)
 
 def get_tangents(circle1, circle2, R=1.):
     # Note:
@@ -118,21 +145,19 @@ def get_tangents(circle1, circle2, R=1.):
 
     return t1, t2
 
-
-
-def get_length(path):
-    arc1 = path[0] * path[-1]
-    arc2 = path[-2] * path[-1]
-    L = np.linalg.norm(path[2]-path[1])
-    length = arc1 + arc2 + L
-    return arc1, L, arc2, length
-
-def sample_points(path, length, n_points):
-    a1_samples = n_samples * (length[0] / length[-1])
-    a2_samples = n_samples * (length[2] / length[-1])
-    L_samples = n_samples - a1_samples - a2_samples
-
-    points = np.zeros(n_samples, 2)
+# def get_length(path):
+#     arc1 = path[0] * path[-1]
+#     arc2 = path[-2] * path[-1]
+#     L = np.linalg.norm(path[2]-path[1])
+#     length = arc1 + arc2 + L
+#     return arc1, L, arc2, length
+#
+# def sample_points(path, length, n_points):
+#     a1_samples = n_samples * (length[0] / length[-1])
+#     a2_samples = n_samples * (length[2] / length[-1])
+#     L_samples = n_samples - a1_samples - a2_samples
+#
+#     points = np.zeros(n_samples, 2)
 
 
 
@@ -141,15 +166,18 @@ def sample_points(path, length, n_points):
 # TESTS
 #################
 
-np.random.seed(100)
+np.random.seed()
 
 q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
 q1 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
 
 radius = 1.5
 
-d = Dubin(q0, q1, radius)
-d.sample()
+d = Dubin(q0, q1, radius, 50)
+paths = d.make_path()
+print(paths)
 
+plt.plot(paths[3].T[0], paths[3].T[1], '.')
+d.plot()
 
-
+plt.show()
