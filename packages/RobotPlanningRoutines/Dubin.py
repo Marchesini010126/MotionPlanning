@@ -103,16 +103,23 @@ class Dubin:
                     n = 0
                     for a in np.linspace(path[0], path[0]+length[0], alpha_samples):
                         p = circle0[0] + self.radius * np.array([np.cos(a), np.sin(a)])
+                        th = a + circle0[-1]*np.pi/2
                         self.paths[i][n][:-1] += p
+                        self.paths[i][n][-1] += th
                         n += 1
 
+                    V = path[3] - path[2]
+                    th = np.arctan2(V[1], V[0])
                     for l in np.linspace(path[2], path[3], L_samples):
                         self.paths[i][n][:-1] = l
+                        self.paths[i][n][-1] += th
                         n += 1
 
                     for b in np.linspace(path[-2], path[-2]+length[-2], beta_samples):
                         p = circle1[0] + self.radius * np.array([np.cos(b), np.sin(b)])
+                        th = b + circle1[-1] * np.pi / 2
                         self.paths[i][n][:-1] += p
+                        self.paths[i][n][-1] += th
                         n += 1
 
                 i += 1
@@ -125,6 +132,7 @@ class Dubin:
 
         for path in self.paths:
             plt.plot(path.T[0], path.T[1], '.')
+
 
         plt.gca().set_aspect(1)
         plt.show()
@@ -186,7 +194,6 @@ def get_tangents(circle1, circle2, R=1.):
         else:
             # the two circles overlap, so no inner tangents can be found:
             # TODO : create two new circles, both tangent to the two original circles and find tangent points between them
-            # TBD !!!
 
             print("No inner tangents between overlapping circles!")
             t1, t2 = np.nan, np.nan
@@ -198,7 +205,7 @@ def get_tangents(circle1, circle2, R=1.):
 # TESTS
 #################
 
-np.random.seed(9) # a nice seed is 9, seed for overlapping debug eg.40
+np.random.seed() # a nice seed is 9, seed for overlapping debug eg.40
 
 q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
 q1 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
@@ -207,6 +214,8 @@ radius = 1.5
 d = Dubin(q0, q1, radius, 40)
 
 paths = d.make_path()
+
+print(paths)
 d.plot()
 
 
