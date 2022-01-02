@@ -79,9 +79,12 @@ class Dubin:
 
     def make_path(self):
         self.paths = np.zeros((2, self.res, 3))
+        lengths = np.array([])
+
         i = 0
         for circle in self.circles:
             path, length = self.get_path(circle, self.pos1)
+            lengths = np.append(lengths, length[-1])
 
             alpha_samples = abs(self.res * length[0] * self.radius // length[-1]).astype(np.int64)
             L_samples = (self.res - alpha_samples).astype(np.int64)
@@ -103,11 +106,14 @@ class Dubin:
 
             i += 1
 
+        sorted = np.array([])
+        sorted = np.append(sorted, [self.paths[np.argmin(lengths)], self.paths[np.argmax(lengths)]])
+
+        self.paths = sorted.reshape((2, self.res, 3))
         return self.paths
 
     def plot(self):
         plot_state(q0, self.circles, self.radius, 'g')
-        plt.plot(self.pos1[0], self.pos1[1], 'o', color='r')
 
         for path in self.paths:
             plt.plot(path.T[0], path.T[1], '.')
@@ -117,6 +123,8 @@ class Dubin:
 
         circles = self.get_circles(self.paths[1][-1][:2], self.paths[1][-1][-1])
         plot_state(self.paths[1][-1], circles, self.radius, color='navajowhite')
+
+        plt.plot(self.pos1[0], self.pos1[1], 'x', color='r')
 
         plt.gca().set_aspect(1)
         plt.show()
@@ -172,9 +180,9 @@ point = [np.random.randint(-5,5), np.random.randint(-5,5)]
 # q0 = [0, 0, 0]
 # q1 = [0, 2.5, 0]
 
-radius = 1.5
+radius = 1.
 
-d = Dubin(q0, point, radius, 40)
+d = Dubin(q0, point, radius, 25)
 
 paths = d.make_path()
 
