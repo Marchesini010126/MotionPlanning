@@ -73,11 +73,12 @@ class Dubin:
 
             i += 1
 
+        # sort the paths from shortest to longest
         sorted = np.array([])
         sorted = np.append(sorted, [self.paths[np.argmin(lengths)], self.paths[np.argmax(lengths)]])
 
         self.paths = sorted.reshape((2, self.res, 3))
-        return self.paths
+        return self.paths, np.sort(lengths)
 
     def plot(self):
 
