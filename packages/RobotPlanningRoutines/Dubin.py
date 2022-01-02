@@ -112,6 +112,12 @@ class Dubin:
         for path in self.paths:
             plt.plot(path.T[0], path.T[1], '.')
 
+        circles = self.get_circles(self.paths[0][-1][:2], self.paths[0][-1][-1])
+        plot_state(self.paths[0][-1], circles, self.radius, color='lightblue')
+
+        circles = self.get_circles(self.paths[1][-1][:2], self.paths[1][-1][-1])
+        plot_state(self.paths[1][-1], circles, self.radius, color='navajowhite')
+
         plt.gca().set_aspect(1)
         plt.show()
 
@@ -126,7 +132,7 @@ def plot_state(q, circles, R=1., color='r'):
     plot_circle(circles[1][0], R, color)
 
     plt.plot(q[0], q[1], 'o', color=color) # plot robot center
-    plt.quiver(q[0], q[1], np.cos(q[2]), np.sin(q[2]), scale=5) # plot arrow in the direction of orientation
+    plt.quiver(q[0], q[1], np.cos(q[2]), np.sin(q[2]), scale=5, color=color) # plot arrow in the direction of orientation
     plt.plot(circles[0][0][0], circles[0][0][1], '+', color=color)
     plt.plot(circles[1][0][0], circles[1][0][1], '_', color=color)
 
@@ -135,48 +141,6 @@ def rot2d(vec, angle):
                     [np.sin(angle), np.cos(angle)]])
     new = mat @ vec
     return new
-
-# def get_tangents(circle1, circle2, R=1.):
-#     # Note:
-#     # since the two circles that we are calculating the common tangents for are of the same radius, lots of simplifications can be made.
-#     # this code would not at all work for the general case of two different sized circles.
-#
-#     p1 = circle1[0]
-#     p2 = circle2[0]
-#
-#     V = p2 - p1 # vector V from center of cirlce 1 to cirlce 2
-#
-#     # outer tangents
-#     if circle1[-1] == circle2[-1]:
-#         n = np.array([V[1], -V[0]]) # normal vector to V: if V has slope v/u, then the normal has slope -u/v
-#         n /= np.linalg.norm(n)
-#         n *= circle1[-1] # the placement of the minus sign in "-u/v" matters for distinguishing outer tangents of CW and CCW circles: [v, -u] is not [-v, u]
-#
-#         t1 = p1 + R * n
-#         t2 = p2 + R * n
-#
-#     # inner tangents
-#     else:
-#         D = np.linalg.norm(V)
-#
-#         if D/2 >= R:
-#             alpha = np.arccos(R / (0.5 * D))  # we know the inner tangents will intersect in the middle
-#             alpha *= circle2[-1]
-#
-#             n = rot2d(V, alpha) # vector pointing from circle center to tangent point
-#             n /= np.linalg.norm(n)
-#
-#             t1 = p1 + n * R
-#             t2 = p2 - n * R
-#
-#         else:
-#             # the two circles overlap, so no inner tangents can be found:
-#             # TODO : create two new circles, both tangent to the two original circles and find tangent points between them
-#
-#             print("No inner tangents between overlapping circles!")
-#             t1, t2 = np.nan, np.nan
-#
-#     return t1, t2
 
 def tangent(circle, point, R=1.):
     V = point - circle[0]
