@@ -10,7 +10,7 @@ def main():
     start = (50, 50, 0)
     goal = (1150, 700, 0)
     obsDim = 50
-    obsNum = 200
+    obsNum = 120
     i = 0
     t1 = 0
     coords = []
@@ -22,7 +22,6 @@ def main():
 
     obstacles = graph.makeObs()
     map.drawMap(obstacles)
-    print("RRT main reached this point")
 
     t1 = time.time()
     while (not graph.pathToGoal()):

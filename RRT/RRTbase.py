@@ -39,7 +39,7 @@ class RRTMap:
 
     def drawPath(self, path):
         for node in path:
-            pygame.draw.circle(self.map, self.red, node, self.nodeRad+3, 0)
+            pygame.draw.circle(self.map, self.red, node[:2], self.nodeRad+3, 0)
 
     def drawObs(self, obstacles):
         obstaclesList = obstacles.copy()
