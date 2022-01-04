@@ -33,8 +33,8 @@ class RRTMap:
 
 
     def drawMap(self, obstacles):
-        pygame.draw.circle(self.map, self.green, self.start, self.nodeRad+5, 0)
-        pygame.draw.circle(self.map, self.green, self.goal, self.nodeRad+20, 1)
+        pygame.draw.circle(self.map, self.green, self.start[:2], self.nodeRad+5, 0)
+        pygame.draw.circle(self.map, self.green, self.goal[:2], self.nodeRad+20, 1)
         self.drawObs(obstacles)
 
     def drawPath(self, path):
@@ -52,18 +52,13 @@ class RRTMap:
 
 class RRTGraph:
     def __init__(self, start, goal, MapDimensions, obsdim, obsnum):
-        (x, y) = start
         self.start = start
         self.goal = goal
         self.goalFlag = False
         self.maph, self.mapw = MapDimensions
-        self.x = []
-        self.y = []
-        self.parent = []
         # initialize tree
-        self.x.append(x)
-        self.y.append(y)
-        self.parent.append(0)
+        self.nodes = [start]  # List of tuples representing C space (x, y, theta)
+        self.parent = [0]  # List of ints, representing each node's parent (ie node N's parent can be found at index N)
         # obstacles
         self.obstacles = []
         self.obsDim = obsdim
@@ -74,12 +69,14 @@ class RRTGraph:
 
 
     def makeRandomRect(self):
+        """Randomly select coordinates in workspace"""
         uppercornerx = int(random.uniform(0, self.mapw - self.obsDim))
         uppercornery = int(random.uniform(0, self.maph - self.obsDim))
         return (uppercornerx, uppercornery)
 
 
     def makeObs(self):
+        """Create given amount of obstacles, clear of start and goal point"""
         obs = []
         for i in range(0, self.obsNum):
             rectangle = None
@@ -87,7 +84,7 @@ class RRTGraph:
             while startgoalcol:
                 upper = self.makeRandomRect()
                 rectangle = pygame.Rect(upper, (self.obsDim, self.obsDim))
-                if rectangle.collidepoint(self.start) or rectangle.collidepoint(self.goal):
+                if rectangle.collidepoint(self.start[:2]) or rectangle.collidepoint(self.goal[:2]):
                     startgoalcol = True
                 else:
                     startgoalcol = False
@@ -95,37 +92,49 @@ class RRTGraph:
         self.obstacles = obs.copy()
         return obs
 
-    def addNode(self, n, x, y):
-        self.x.insert(n, x)
-        self.y.insert(n, y)
+    def addNode(self, n, node):
+        """Add node to graph
+
+        Keyword arguments:
+        n -- the node number
+        node -- tuple represent C-space: (x, y, theta)
+        """
+        self.nodes.insert(n, node)
 
 
     def removeNode(self, n):
-        self.x.pop(n)
-        self.y.pop(n)
+        """Remove node from graph"""
+        self.nodes.pop(n)
 
     def addEdge(self, parent, child):
+        """Connect nodes to each other"""
         self.parent.insert(child, parent)
 
     def removeEdge(self, n):
+        """Remove connection between nodes"""
         self.parent.pop(n)
 
     def numberOfNodes(self):
-        return len(self.x)
+        """Return number of nodes in graph"""
+        return len(self.nodes)
 
     def distance(self, n1, n2):
-        (x1, y1) = (self.x[n1], self.y[n1])
-        (x2, y2) = (self.x[n2], self.y[n2])
+        """Calculate straight line distance between two nodes"""
+        node1, node2 = self.nodes[n1], self.nodes[n2]
+        x1, y1, theta1 = node1[0], node1[1], node1[2]
+        x2, y2, theta2 = node2[0], node2[1], node2[2]
         px = (float(x1) - float(x2))**2
         py = (float(y1) - float(y2))**2
         return (px + py)**(0.5)
 
     def sample_envir(self):
+        """Get random coordinate in workspace"""
         x = int(random.uniform(0, self.mapw))
         y = int(random.uniform(0, self.maph))
         return x, y
 
     def nearest(self, n):
+        """Return nearest connected node"""
         dmin = self.distance(0, n)
         nnear = 0
         for i in range(0, n):
@@ -135,8 +144,9 @@ class RRTGraph:
         return nnear
 
     def isFree(self):
+        """Check if newest node is not within an object"""
         n = self.numberOfNodes() - 1
-        (x, y) = self.x[n], self.y[n]
+        (x, y, theta) = self.nodes[n]
         obs = self.obstacles.copy()
         while len(obs) > 0:
             rectangle = obs.pop(0)
@@ -146,6 +156,7 @@ class RRTGraph:
         return True
 
     def crossObstacle(self, x1, x2, y1, y2):
+        """Check if straight line between two coordinates crosses objects"""
         obs = self.obstacles.copy()
         while len(obs) > 0:
             rectangle = obs.pop(0)
@@ -158,8 +169,10 @@ class RRTGraph:
         return  False
 
     def connect(self, n1, n2):
-        (x1, y1) = (self.x[n1], self.y[n1])
-        (x2, y2) = (self.x[n2], self.y[n2])
+        """Connect two nodes, if possible"""
+        node1, node2 = self.nodes[n1], self.nodes[n2]
+        x1, y1, theta1 = node1[0], node1[1], node1[2]
+        x2, y2, theta2 = node2[0], node2[1], node2[2]
         if self.crossObstacle(x1, x2, y1, y2):
             self.removeNode(n2)
             return False
@@ -168,58 +181,62 @@ class RRTGraph:
             return True
 
     def step(self, nnear, nrand, dmax = 35):
+        """Check if new node is close enough to nearest node, if not move it closer."""
         d = self.distance(nnear, nrand)
         if d > dmax:
             u = dmax/d
-            (xnear, ynear) = (self.x[nnear], self.y[nnear])
-            (xrand, yrand) = (self.x[nrand], self.y[nrand])
+            xnear, ynear = self.nodes[nnear][0], self.nodes[nnear][1]
+            xrand, yrand = self.nodes[nrand][0], self.nodes[nrand][1]
             (px, py) = (xrand - xnear, yrand - ynear)
             theta = math.atan2(py, px)
             (x, y) = (int(xnear + dmax*math.cos(theta)), int(ynear + dmax*math.sin(theta)))
             self.removeNode(nrand)
             if abs(x - self.goal[0]) < dmax and abs(y - self.goal[1]) < dmax:
-                self.addNode(nrand, self.goal[0], self.goal[1])
+                self.addNode(nrand, (self.goal[0], self.goal[1], theta))
                 self.goalstate = nrand
                 self.goalFlag = True
             else:
-                self.addNode(nrand, x, y)
+                self.addNode(nrand, (x, y, theta))
 
 
     def pathToGoal(self):
+        """Trace back steps to find th path after goal is reached"""
         if self.goalFlag:
             self.path = []
             self.path.append(self.goalstate)
             newpos = self.parent[self.goalstate]
-            while (newpos != 0):
+            while newpos != 0:
                 self.path.append(newpos)
                 newpos = self.parent[newpos]
             self.path.append(0)
         return self.goalFlag
 
     def getPathCoords(self):
+        """Return list of each coordinate (in C space) of the path"""
         pathCoords = []
         for node in self.path:
-            x, y = (self.x[node], self.y[node])
-            pathCoords.append((x, y))
+            pathCoords.append(self.nodes[node])
         return pathCoords
 
     def bias(self, ngoal):
+        """Take step directly towards the goal"""
         n = self.numberOfNodes()
-        self.addNode(n, ngoal[0], ngoal[1])
+        self.addNode(n, (ngoal[0], ngoal[1], ngoal[2]))
         nnear = self.nearest(n)
         self.step(nnear, n)
         self.connect(nnear, n)
-        return self.x, self.y, self.parent
+        return self.nodes, self.parent
 
     def expand(self):
+        """Take random step"""
         n = self.numberOfNodes()
         x, y = self.sample_envir()
-        self.addNode(n, x, y)
+        self.addNode(n, (x, y, 0))  # !! theta randomly set to 0, as it is currently ignored. To be calculated by Dubin
         if self.isFree():
             xnearest = self.nearest(n)
             self.step(xnearest, n)
             self.connect(xnearest, n)
-        return self.x, self.y, self.parent
+        return self.nodes, self.parent
 
     def cost(self):
         pass

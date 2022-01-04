@@ -7,8 +7,8 @@ import numpy as np
 
 def main():
     dimensions = (750, 1200)
-    start = (50, 50)
-    goal = (1150, 700)
+    start = (50, 50, 0)
+    goal = (1150, 700, 0)
     obsDim = 50
     obsNum = 200
     i = 0
@@ -22,6 +22,7 @@ def main():
 
     obstacles = graph.makeObs()
     map.drawMap(obstacles)
+    print("RRT main reached this point")
 
     t1 = time.time()
     while (not graph.pathToGoal()):
@@ -31,13 +32,15 @@ def main():
             raise
 
         if i % 10 == 0:
-            x, y, parent = graph.bias(goal)
-            pygame.draw.circle(map.map, map.grey, (x[-1], y[-1]), map.nodeRad+2, 0)
-            pygame.draw.line(map.map, map.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), map.edgeThickness)
+            nodes, parent = graph.bias(goal)
+            x, y = nodes[-1][0], nodes[-1][1]
+            pygame.draw.circle(map.map, map.grey, (x, y), map.nodeRad+2, 0)
+            pygame.draw.line(map.map, map.blue, (x, y), (nodes[parent[-1]][0], nodes[parent[-1]][1]), map.edgeThickness)
         else:
-            x, y, parent = graph.expand()
-            pygame.draw.circle(map.map, map.grey, (x[-1], y[-1]), map.nodeRad+2, 0)
-            pygame.draw.line(map.map, map.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), map.edgeThickness)
+            nodes, parent = graph.expand()
+            x, y = nodes[-1][0], nodes[-1][1]
+            pygame.draw.circle(map.map, map.grey, (x, y), map.nodeRad+2, 0)
+            pygame.draw.line(map.map, map.blue, (x, y), (nodes[parent[-1]][0], nodes[parent[-1]][1]), map.edgeThickness)
         if i % 10 == 0:
             pygame.display.update()
 
@@ -57,5 +60,6 @@ if __name__ == "__main__":
         try:
             main()
             result = True
-        except:
+        except Exception as e:
             result = False
+            print(e)
