@@ -88,7 +88,7 @@ class Dubin:
 
         return [alpha_p, alpha_t, t1, t2, beta_t, beta_p], [d_alpha, L, d_beta, total]
 
-    def make_path(self): #TODO: add orientations to the returned states
+    def make_path(self):
         self.paths = np.zeros((4, self.res, 3))
         i = 0
         for circle0 in self.circles0:
@@ -207,9 +207,12 @@ def get_tangents(circle1, circle2, R=1.):
 
 np.random.seed(9) # a nice seed is 9, seed for overlapping debug eg.40
 
-q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
-q1 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
-radius = 0.5
+# q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
+# q1 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
+
+q0 = [0, 0, 0]
+q1 = [0, 2.5, 0]
+radius = 1.5
 
 d = Dubin(q0, q1, radius, 40)
 
