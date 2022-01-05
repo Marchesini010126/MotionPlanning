@@ -193,8 +193,30 @@ class EnvMap():
             obs_list.append(obstacle)
         
         self.obstacle_list = obs_list
-        return obs_list        
-        
+        return obs_list
+
+    def load_room_map(self, filename):
+
+        self.data = []
+        with open(filename, 'rt') as f:
+            for line in f:
+                self.data.append(line.strip())
+
+        width = self.Mapw/len(self.data[0])
+        height = self.Maph / len(self.data)
+
+        obs_list = []
+
+        for row, tiles in enumerate(self.data):
+            for col, tile in enumerate(tiles):
+                if tile == '1':
+                    center = np.array([(col-1)*width + width/2, (row-1)*height+height/2])
+                    obstacle = ObstaclesFactory.createRectangle(width, height, center)
+
+                    obs_list.append(obstacle)
+
+        self.obstacle_list = obs_list
+        return obs_list
 ###############################################################################################
 # SIMPLE ROBOT CLASS
 ###############################################################################################

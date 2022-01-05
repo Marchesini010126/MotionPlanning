@@ -53,7 +53,7 @@ obstacles_list = [polygon1,rect_rot]
 #        and the bounding radious is euqal to the radious itself
 
 # initialise map enviroment
-motionMap = EnvMap()
+motionMap = EnvMap((10,10,0),(30,30,np.pi),(100,100))
 motionMap.add_obstacles(obstacles_list)
 
 

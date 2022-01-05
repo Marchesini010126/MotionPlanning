@@ -24,8 +24,8 @@ motionMap            = EnvMap(start,goal,dimensions)
 myRobot              = Robot(start[0],start[1],start[2])
 
 
-randomObstacles_list  = motionMap.createRandomMap(10,['polygon','rectangle'],minRadius=20,maxRadius = 40)
-#randomObstacles_list = motionMap.load_room_map()
+# randomObstacles_list  = motionMap.createRandomMap(10,['polygon','rectangle'],minRadius=20,maxRadius = 40)
+randomObstacles_list = motionMap.load_room_map("MAP.txt")
 motionMap.add_obstacles(randomObstacles_list)
 free_obtacles = motionMap.check_feasibility()
 
