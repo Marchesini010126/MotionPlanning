@@ -210,7 +210,7 @@ class EnvMap():
         for row, tiles in enumerate(self.data):
             for col, tile in enumerate(tiles):
                 if tile == '1':
-                    center = np.array([(col-1)*width + width/2, (row-1)*height+height/2])
+                    center = np.array([(col)*width + width/2, (row)*height+height/2])
                     obstacle = ObstaclesFactory.createRectangle(width, height, center)
 
                     obs_list.append(obstacle)
