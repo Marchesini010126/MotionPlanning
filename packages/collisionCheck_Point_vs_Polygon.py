@@ -1,9 +1,11 @@
 import numpy as np
-import RobotPlanningRoutines.ObstaclesFactory as factory
+
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
+import sys
 
+import RobotPlanningRoutines.ObstaclesFactory as factory
 from RobotPlanningRoutines.planners_and_env import EnvMap
 from RobotPlanningRoutines.CollisionChecks  import CircleCollision
 from RobotPlanningRoutines.CollisionChecks  import GJK,minkowskiDifference
@@ -35,6 +37,7 @@ p2 = Polygon(mkdiff, facecolor = 'k')
 
 fig,ax = plt.subplots()
 ax.add_patch(p1)
+print(type(polygon1['vertices']))
 circle1=plt.Circle(tuple(polygon1['center']),polygon1['radius'],fill=False)
 circle2=plt.Circle(tuple(point_check),10,fill=True)
 ax.add_patch(circle1)

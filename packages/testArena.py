@@ -2,14 +2,15 @@ import pygame
 import sys
 import numpy as np
 import RobotPlanningRoutines.ObstaclesFactory as factory
-from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTGraph,Robot
+from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
 from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
-dimensions = (1200, 600)
-start      = (100, 100)
-goal       = (1000, 450)
-obsDim     = 50
+## TEST ARENA FOR THE RRT FUNCTIONALITIES
+
+dimensions = (1200,600)
+start      = (100, 100,0)  # start configuration
+goal       = (1100, 500,0) # goal configuration
 obsNum     = 200
 i          = 0
 t1         = 0
@@ -20,15 +21,19 @@ robot_rad = 20
 pygame.init()
 
 motionMap            = EnvMap(start,goal,dimensions)
-myRobot              = Robot(start_loc=start,radius=robot_rad)
-randomObstacles_list = motionMap.createRandomMap(5,['polygon','rectangle'])
-randomObstacles_list = motionMap.load_room_map()
+myRobot              = Robot(start[0],start[1],start[2])
+
+
+randomObstacles_list  = motionMap.createRandomMap(10,['polygon','rectangle'],minRadius=20,maxRadius = 40)
+#randomObstacles_list = motionMap.load_room_map()
 motionMap.add_obstacles(randomObstacles_list)
-RRTpathFinder = RRTGraph(start, goal,dimensions,randomObstacles_list,myRobot)
+free_obtacles = motionMap.check_feasibility()
+
+RRTpathFinder         = RRTplanner(start, goal,dimensions,free_obtacles,myRobot)
 
 motionMap.draw_obstacles()
 
-t1 = time.time()
+print(t1)
 new_path=False
 while running:
     for event in pygame.event.get():
@@ -38,28 +43,25 @@ while running:
            sys.exit()
            
     elapsed = time.time() - t1
-    t1 = time.time()
-    
     motionMap.draw_startgoal()
-    if i % 10 == 0:
-        x, y, parent = RRTpathFinder.bias(goal)
-        x, y, parent = RRTpathFinder.rebase()
-        pygame.draw.circle(motionMap.map, motionMap.grey, (x[-1], y[-1]), robot_rad, 2)
-        pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
-    else:
-        x, y, parent = RRTpathFinder.expand()
-        x, y, parent = RRTpathFinder.rebase()
-        pygame.draw.circle(motionMap.map, motionMap.grey, (x[-1], y[-1]), robot_rad, 2)
-        pygame.draw.line(motionMap.map, motionMap.blue, (x[-1], y[-1]), (x[parent[-1]], y[parent[-1]]), motionMap.edgeThickness)
+    nodes, parent = RRTpathFinder.expand()
+    currentDubinPath = RRTpathFinder.local_best_path
+    if not len(currentDubinPath)==0 : 
+        pygame.draw.lines(motionMap.map, motionMap.blue,False,tuple(currentDubinPath[:,:2]))
+        
+    myRobot.reset_state(nodes[-1])
+    myRobot.draw_robot(motionMap.map)
     
-    if i % 10 == 0:
-        if RRTpathFinder.pathToGoal() :
-             #motionMap.drawPath(RRTpathFinder.getPathCoords())
-            pass
+   
+    
+#     if i % 10 == 0:
+#         if RRTpathFinder.pathToGoal() :
+#              #motionMap.drawPath(RRTpathFinder.getPathCoords())
+#             pass
     
     pygame.display.update()
     
-    #smooth.append(RRTpathFinder.getPathCoords())
+#     #smooth.append(RRTpathFinder.getPathCoords())
     i += 1
 
 

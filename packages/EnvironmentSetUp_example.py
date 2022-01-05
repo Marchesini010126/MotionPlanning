@@ -11,18 +11,18 @@ from RobotPlanningRoutines.CollisionChecks import CircleCollision
 # PYGAME IS USED AS A GRAPHIC INTERFACE FOR BUILDING
 # THE MAPS IN THE ENVIRONMENT
 
-#  Step1 : Initialise map and insert obstacles
+# Step1 : Initialise map and insert obstacles
 
 # initialise pygame enviromemnt
 
-screen_width  = 800 
-screen_height = 600
-start         = (50, 50)
-goal          = (1950, 1150)
+screen_width    = 800 
+screen_height   = 600
+start           = (50, 50)
+goal            = (1950, 1150)
 screenDimension = (screen_width,screen_height)
-screen        = pygame.display.set_mode((screen_width, screen_height)) 
-clock         = pygame.time.Clock() # clock object to monitor data framing 
-running       = True                # infinite loop initialization parameter
+screen          = pygame.display.set_mode((screen_width, screen_height)) 
+clock           = pygame.time.Clock() # clock object to monitor data framing 
+running         = True                # infinite loop initialization parameter
 
 # create obstacles 
 
@@ -34,12 +34,11 @@ color        = (100,200,0)
 
 # obstacles definition
 polygon1       = factory.createNpolygon(n_sides,bound_radius,center,color)
-circle1        = factory.createCircle(bound_radius,center+1.5*center,color)
 rect1          = factory.createRectangle(200,100,center*2.1,(100,0,90))
 
 # rotate an obstacle of a given angle
 rect_rot       = factory.rotation(rect1,np.pi/8)
-obstacles_list = [polygon1,circle1,rect_rot]
+obstacles_list = [polygon1,rect_rot]
 
 
 # An obstacle is a dictionary with the following keys/items pair :
@@ -54,7 +53,7 @@ obstacles_list = [polygon1,circle1,rect_rot]
 #        and the bounding radious is euqal to the radious itself
 
 # initialise map enviroment
-motionMap = EnvMap(screenDimension)
+motionMap = EnvMap()
 motionMap.add_obstacles(obstacles_list)
 
 

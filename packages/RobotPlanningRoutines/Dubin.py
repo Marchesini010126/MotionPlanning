@@ -3,28 +3,25 @@ from matplotlib import pyplot as plt
 
 class Dubin:
 
-    def __init__(self, q0, goal, Rturn=1., n_samples=None):
+    def __init__(self, start_configuration, goal, Rturn=20., n_samples=40):
         
         # ----------DESCRIPTION--------------
-        # creates a Dubins path between a starting 
-        # configuration and a final position
-        # The final heading is not specified 
-        # but it is a result of the shortest path 
-        # computation
+        # initialise class
         # -----------INPUT-------------------
-        # q0        : start configuration   tuple
-        #             (x,y,theta)
-        # goal      : goal position         tuple
-        # Rturn     : turning radius        float
-        # n_samples : number of samples     int
-        #             in a path
+        # start_configuration : initial state (x,y,theta)   tuple
+        # goal                : goal position (x,y)         tuple
+        # Rturn               : turning radius              float
+        # n_sample            : number of samples           float
+        #                       to be used for a single
+        #                       path
+        # -----------OUTPUT------------------
+        # update state 
         
-        
-        
-        self.radius = Rturn
-        self.pos0   = np.array(q0[:2])
-        self.pos1   = np.array(goal)
-        self.theta0 = q0[2]
+        self.radius     = Rturn           
+        self.start_conf = start_configuration 
+        self.pos0       = np.array(start_configuration[:2])
+        self.pos1       = np.array(goal)
+        self.theta0     = start_configuration[2]
 
         self.res = n_samples
 
@@ -45,7 +42,7 @@ class Dubin:
         cp = self.pos0 - c
 
         # vectors from centers of the circles to their respective tangents
-        t = tangent(circle, point, self.radius)
+        t = self.tangent(circle, point, self.radius)
         ct = t - c
         L = np.linalg.norm(point - t) # distance from t to point
 
@@ -101,10 +98,10 @@ class Dubin:
 
         for [path, color] in zip(self.paths, ['lightblue', 'navajowhite']):
             circles = self.get_circles(path[-1][:2], path[-1][-1])
-            plot_state(path[-1], circles, self.radius, color=color)
+            self.plot_state(path[-1], circles, self.radius, color=color)
             plt.plot(path.T[0], path.T[1], '.')
 
-        plot_state(q0, self.circles, self.radius, 'g')
+        self.plot_state(self.start_conf, self.circles, self.radius, 'g')
 
         plt.plot(self.pos1[0], self.pos1[1], 'x', color='r')
 
@@ -112,43 +109,43 @@ class Dubin:
         plt.show()
 
 
-def plot_circle(pos, R=1., color='r'):
-    angles = np.arange(0, 2 * np.pi + 0.1, 0.1)
-    plt.plot(R * np.cos(angles) + pos[0], R * np.sin(angles) + pos[1], '-.', color=color)
+    def plot_circle(self,pos, R=1., color='r'):
+        angles = np.arange(0, 2 * np.pi + 0.1, 0.1)
+        plt.plot(R * np.cos(angles) + pos[0], R * np.sin(angles) + pos[1], '-.', color=color)
 
-def plot_state(q, circles, R=1., color='r'):
-    # Plot the circles
-    plot_circle(circles[0][0], R, color)
-    plot_circle(circles[1][0], R, color)
+    def plot_state(self,q, circles, R=1., color='r'):
+        # Plot the circles
+        self.plot_circle(circles[0][0], R, color)
+        self.plot_circle(circles[1][0], R, color)
 
-    plt.plot(q[0], q[1], 'o', color=color) # plot robot center
-    plt.quiver(q[0], q[1], np.cos(q[2]), np.sin(q[2]), scale=5, color=color) # plot arrow in the direction of orientation
-    plt.plot(circles[0][0][0], circles[0][0][1], '+', color=color)
-    plt.plot(circles[1][0][0], circles[1][0][1], '_', color=color)
+        plt.plot(q[0], q[1], 'o', color=color) # plot robot center
+        plt.quiver(q[0], q[1], np.cos(q[2]), np.sin(q[2]), scale=5, color=color) # plot arrow in the direction of orientation
+        plt.plot(circles[0][0][0], circles[0][0][1], '+', color=color)
+        plt.plot(circles[1][0][0], circles[1][0][1], '_', color=color)
 
-def rot2d(vec, angle):
-    mat = np.array([[np.cos(angle), -np.sin(angle)],
-                    [np.sin(angle), np.cos(angle)]])
-    new = mat @ vec
-    return new
+    def rot2d(self,vec, angle):
+        mat = np.array([[np.cos(angle), -np.sin(angle)],
+                        [np.sin(angle), np.cos(angle)]])
+        new = mat @ vec
+        return new
 
-def tangent(circle, point, R=1.):
-    V = point - circle[0]
-    D = np.linalg.norm(V)
+    def tangent(self,circle, point, R=1.):
+        V = point - circle[0]
+        D = np.linalg.norm(V)
 
-    if D > R:
-        alpha = np.arccos(R/D)
-        alpha *= -circle[-1]
+        if D > R:
+            alpha = np.arccos(R/D)
+            alpha *= -circle[-1]
 
-        n = rot2d(V, alpha)  # vector pointing from circle center to tangent point
-        n /= np.linalg.norm(n)
+            n = self.rot2d(V, alpha)  # vector pointing from circle center to tangent point
+            n /= np.linalg.norm(n)
 
-        tangent = circle[0] + R * n
+            tangent = circle[0] + R * n
 
-        return tangent
+            return tangent
 
-    else:
-        return np.inf
+        else:
+            return np.inf
 
 
 
@@ -156,21 +153,20 @@ def tangent(circle, point, R=1.):
 # TESTS
 #################
 
-if __name__ == '__main__' :
+if __name__== '__main__' :
+    np.random.seed()
 
-        np.random.seed()
+    q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
+    point = [np.random.randint(-5,5), np.random.randint(-5,5)]
 
-        q0 = [np.random.randint(-5,5), np.random.randint(-5,5), np.random.random_sample()*2*np.pi]
-        point = [np.random.randint(-5,5), np.random.randint(-5,5)]
+    # q0 = [0, 0, 0]
+    # point = [0,-2]
 
-        # q0 = [0, 0, 0]
-        # point = [0,-2]
+    radius = 1.5
 
-        radius = 1.5
+    d = Dubin(q0, point, radius, 25)
 
-        d = Dubin(q0, point, radius, 25)
+    paths = d.make_path()
 
-        paths,legths = d.make_path()
-
-        print(paths,legths)
-        d.plot()
+    print(paths)
+    d.plot()
