@@ -1,6 +1,7 @@
 import numpy as np
 import cvxpy as cvx
-from casadi import *
+
+from   casadi import *
 import matplotlib.pyplot as plt
 import pygame
 

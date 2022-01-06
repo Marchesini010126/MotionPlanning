@@ -136,8 +136,15 @@ class EnvMap():
     
     def drawPath(self, path):
         # path : list of tuple (x,y)
-        for node in path:
-            pygame.draw.circle(self.map, self.blue, node, self.nodeRad+3, 0)
+        file = 'path_nodes.txt'
+        f=open(file,'w')
+        for line in path :
+            printer = ' '.join([str(a) for a in line])
+            f.write(printer + '\n')
+        f.close()
+        
+        
+        pygame.draw.lines(self.map, self.red,False,path,2)
     
     @classmethod
     def rot2d(cls,vertices, angle):
@@ -239,7 +246,7 @@ class Robot():
         self.y      = y    # m     y of the baricenter
         self.vx     = 0.0   # m/s
         self.yaw    = 0.0   # rad   angle of the car with the global frame (0 = aligned with x-axis)
-        self.phi  = 0.0   # rad   angle of the wheels with local x-axis (0 = forward, negative = left).
+        self.phi    = 0.0   # rad   angle of the wheels with local x-axis (0 = forward, negative = left).
                              #       Combined w/ velocity it causes yaw rate
         self.state   = np.array([self.x,self.y,self.yaw])
          
@@ -337,22 +344,30 @@ class Robot():
 
 
 class RRTplanner:
-    def __init__(self,start, goal,MapDimensions,obsList,robot):
+    def __init__(self,start,goal,MapDimensions,obsList,maxstep,robot):
         
         self.start           = start   #configuration
         self.goal            = goal    #configuration
-        self.goalFlag        = False
+        self.goalFlag        = False   # a path is found
+        self.alreadyFound    = False   # a path already exist
         self.mapw, self.maph = MapDimensions
         self.limits          = (self.mapw,self.maph)
+        self.maxstep         = maxstep
+        
         # initialize tree
         self.nodes  = [start]  # List of tuples representing C space (x, y, theta)
         self.parent = [0]      # List of ints, representing each node's parent (ie node N's parent can be found at index N)
+        self.cost   = [0]
+        self.local_best_path = [] # saves the local path between two nodes 
+        self.global_path     = [[]] # strores all the paths from parent to child node
+        self.current_best_cost = None # best cost to path
+        
         # obstacles
         self.obstacles = obsList
         # path
         self.goalstate = None
         self.path      = []
-
+        
         
         # Now the robot class is given to the 
         # path planner so that it can use 
@@ -360,18 +375,30 @@ class RRTplanner:
          
         self.robot = robot # robot instanciation
         
-
+    
+    def addCost(self,n,cost) :
+        """add cost to node"""
+        self.cost.insert(n,cost)
+    
+    def removeCost(self,n):
+        """remove cost"""
+        self.cost.pop(n)
+    
     def addNode(self, n, node):
-        # add a node at a given
-        # index n
+        """add node in a given index"""
         self.nodes.insert(n, node)
 
 
     def removeNode(self, n):
+        """remove a node from a given index"""
         # remove a node at a given
         # index n
         self.nodes.pop(n)
-        
+    
+    
+    def addPath(self,n):
+        """add the local best path from prent to child"""
+        self.global_path.insert(n,self.local_best_path[:,:2]) # save only the position and not the angle
 
     def addEdge(self, parent, child):
         # add a parent node at a given
@@ -409,33 +436,35 @@ class RRTplanner:
         randnode = (random.uniform(0,lim) for lim in self.limits )
         return randnode
 
-    def dubin_nearest(self, n,d_rad=70):
+    def dubin_nearest(self, n):
         """find closest node to the final node inside a certain radius"""
-        
+        rebase_rad = self.maxstep*20
         promising_nodes = []
         for i in range(0, n):
             dist = self.euclide_distance(i, n)
-            if dist <d_rad :
+            if dist <rebase_rad :
                 promising_nodes.append(i) 
         
         nnear = promising_nodes[0]
-        best_dubin,best_path = self.dubin_distance(promising_nodes.pop(0), n)
+        best_dubin_dist,best_path = self.dubin_distance(promising_nodes.pop(0), n)
         self.local_best_path = best_path
         for good_node in promising_nodes:
             
-            new_dubin,new_path = self.dubin_distance(good_node, n)
-            if best_dubin>new_dubin :
+            new_dubin_dist,new_path = self.dubin_distance(good_node, n)
+            if best_dubin_dist>new_dubin_dist :
                 
-                best_dubin           = new_dubin
+                best_dubin_dist      = new_dubin_dist
                 self.local_best_path = new_path
                 nnear                = good_node
                 
-        return nnear
+        return nnear,best_dubin_dist
     
     def euclidean_nearest(self, n):
+        """find distance of all nodes from the last node in the list i.e n"""
         dmin = self.euclide_distance(0, n)# to be changed in case of RRT star
         nnear = 0
-        for i in range(0, n):
+        
+        for i in range(0, n): # all except the node itself
             if self.euclide_distance(i, n) < dmin:
                 dmin = self.euclide_distance(i, n)
                 nnear = i
@@ -475,7 +504,7 @@ class RRTplanner:
         # final state from dubins 
         
         final_state = self.local_best_path[-1,:]
-        obs = self.obstacles.copy()
+        obs         = self.obstacles.copy()
         while len(obs) > 0:
             obstacle   = obs.pop(0)
             obs_vert   = obstacle['vertices']
@@ -498,7 +527,7 @@ class RRTplanner:
         
         return False,final_state
 
-    def connect(self, n1, n2):
+    def connect(self, n1, n2,best_dubin_dist):
         """Connect two nodes, (only if possible)"""
         
         iscrossing,final_state=self.crossObstacle(n1,n2)
@@ -506,13 +535,33 @@ class RRTplanner:
         if iscrossing:
             self.removeNode(n2)
             self.local_best_path=[]
+            if self.goalFlag :
+                self.goalFlag = False
+                
             return False
         else:
             self.nodes[n2] = final_state # put the real final state as computed from dubins path
             self.addEdge(n1, n2)
-            return True
+            self.addPath(n2)
+            self.addCost(n2,best_dubin_dist)
+            
+            if self.goalFlag and not self.alreadyFound :
+                self.goalstate = n2
+                self.current_best_cost = self.cost[self.goalstate]
+                self.goalFlag  = False
+                self.alreadyFound = True
+            elif self.goalFlag and self.alreadyFound :
+                if self.current_best_cost > self.cost[n2] :
+                    self.goalstate = n2
+                    self.current_best_cost = self.cost[self.goalstate]
+                    self.goalFlag  = False
+                    
 
-    def step(self, nnear, nrand, dmax=40):
+                    
+            
+            return True
+ 
+    def step(self, nnear, nrand):
         # takes a step in a random dierection
         # if the new node is too distant from
         # the nearest node, a smaller step
@@ -521,7 +570,7 @@ class RRTplanner:
         d = self.euclide_distance(nnear, nrand)
         # definition of distance max is crucial
         
-        if d > dmax:
+        if d > self.maxstep:
             # take a straight line in the direction
             # of the far point which is as big
             # as the maximum allowed distance
@@ -531,45 +580,46 @@ class RRTplanner:
             
             (px, py)     = (xrand - xnear, yrand - ynear)
             theta        = np.arctan2(py, px)
-            (x, y)       = (int(xnear + dmax*np.cos(theta)), int(ynear + dmax*np.sin(theta)))
+            (x, y)       = (int(xnear + self.maxstep*np.cos(theta)), int(ynear + self.maxstep*np.sin(theta)))
             
             self.removeNode(nrand)
             
+            #                                   # by the dubin path later
             
-            if abs(x - self.goal[0]) < dmax and abs(y - self.goal[1]) < dmax:
+            if abs(x - self.goal[0]) < self.maxstep and abs(y - self.goal[1]) < self.maxstep:
                 # if the goal is in the line add the goal 
                 # as a final node ad flag it 
                 self.addNode(nrand, (self.goal[0], self.goal[1], theta))
-                self.goalstate = nrand
-                self.goalFlag = True
+                self.goalFlag=True
             else:
-                
                 self.addNode(nrand, (x, y,0)) # the actual theta is calculated 
                                               # by the dubin path later
-
-
-    def pathToGoal(self):
-        if self.goalFlag:
-            self.path = []
-            self.path.append(self.goalstate)
-            newpos = self.parent[self.goalstate]
-            while (newpos != 0):
-                self.path.append(newpos)     #append the node to the list
-                newpos = self.parent[newpos] #obtain the parent node
-            self.path.append(0)
+    
+    def isGoalReached(self):
         return self.goalFlag
+    
+    def isOnePathFound(self):
+        return self.alreadyFound
 
-    def getPathCoords(self):
-        return self.path
+    def getFinalPath(self):
+        if self.alreadyFound:
+            self.best_final_path=np.flipud(self.global_path[self.goalstate]).tolist()
+            totalcost = self.cost[self.goalstate]
+            parent    = self.parent[self.goalstate]
+            while (parent != 0):
+                self.best_final_path+=(np.flipud(self.global_path[parent]).tolist())
+                parent = self.parent[parent]
+        return self.best_final_path,totalcost
+    
+
        
-
     def bias(self, ngoal):
         """Take step directly towards the goal"""
         n = self.numberOfNodes()
         self.addNode(n, (ngoal[0], ngoal[1], ngoal[2]))
-        nnear = self.nearest(n)
+        nnear = self.euclidean_nearest(n)
         self.step(nnear, n)
-        xnearest = self.dubin_nearest(n)
+        xnearest,best_dubin_dist = self.dubin_nearest(n)
         self.connect(xnearest, n)
         return self.nodes, self.parent
 
@@ -578,13 +628,13 @@ class RRTplanner:
         n = self.numberOfNodes()
         x, y = self.sample_envir()
         self.addNode(n, (x, y, 0))  # !! theta randomly set to 0, as it is currently ignored. To be calculated by Dubin
+        
         if self.isFree():
             xnearest = self.euclidean_nearest(n)
             self.step(xnearest, n)
-            xnearest_dubin = self.dubin_nearest(n) #sets directly the best_path to the nearest point
-            self.connect(xnearest_dubin, n)
+            xnearest_dubin,best_dubin_dist = self.dubin_nearest(n) #sets directly the best_path to the nearest point
+            self.connect(xnearest_dubin, n,best_dubin_dist)
             
         return self.nodes, self.parent
 
-    def cost(self):
-        pass
+    

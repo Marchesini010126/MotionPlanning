@@ -30,6 +30,7 @@ class Dubin:
         self.paths = np.array([])
 
     def get_circles(self, pos, theta):
+        """gets staring turning circles"""
         cl = pos + self.radius * np.array([np.cos(theta + np.pi / 2), np.sin(theta + np.pi / 2)])
         cr = pos + self.radius * np.array([np.cos(theta - np.pi / 2), np.sin(theta - np.pi / 2)])
 
@@ -58,6 +59,21 @@ class Dubin:
         return [alpha_p, alpha_t, t], [d_alpha, L, total]
 
     def make_path(self):
+        """obtain dubins path
+        
+        Return
+        
+        path(np.array(n,m,l)) : list of passible paths from start configuration to given points
+                                n = number of points in a path 
+                                m = 3 (x,y,theta)
+                                l = number of paths 
+                                
+                                note : the paths are sorted from shortest to longest
+                            
+        lengths(list)         : lenghts of the paths in ascending order 
+        
+        """
+        
         self.paths = np.zeros((2, self.res, 3))
         lengths = np.array([])
 
