@@ -1,5 +1,5 @@
 import pygame
-import sys
+import sys,os
 import numpy as np
 import random
 from   random import randint
@@ -504,8 +504,10 @@ class RRTplanner:
         self.parent = [0]      # List of ints, representing each node's parent (ie node N's parent can be found at index N)
         self.cost   = [0]
         self.local_best_path = [] # saves the local path between two nodes 
-        self.global_path     = [[]] # strores all the paths from parent to child node
+        self.parent_path     = [[]] # strores all the paths from parent to child node
         self.current_best_cost = None # best cost to path
+        self.start2goal_paths_lists = []
+        self.number_of_path_found   = 0
         # obstacles
         self.obstacles = obsList
         # path
@@ -520,6 +522,13 @@ class RRTplanner:
         self.robot = robot # robot instanciation
         
     
+    def save_optimal_path(self,path,length):
+        
+        self.start2goal_paths_lists.append({'path':path,'length':length})
+    
+    def get_number_of_paths_found(self):
+        return self.number_of_path_found
+        
     def addCost(self,n,cost) :
         """add cost to node"""
         self.cost.insert(n,cost)
@@ -542,11 +551,11 @@ class RRTplanner:
     
     def addPath(self,n):
         """add the local best path from prent to child"""
-        self.global_path.insert(n,self.local_best_path) # save only the position and not the angle
+        self.parent_path.insert(n,self.local_best_path) # save only the position and not the angle
     
     def removePath(self,n):
         """add the local best path from prent to child"""
-        self.global_path.pop(n) # save only the position and not the angle
+        self.parent_path.pop(n) # save only the position and not the angle
         
     def addEdge(self, parent, child):
         # add a parent node at a given
@@ -587,9 +596,7 @@ class RRTplanner:
     def dubin_nearest(self, n):
         """find closest node to the final node inside a certain radius"""
         rebase_rad = max(300*(np.log(self.numberOfNodes())/self.numberOfNodes())**(1/3),self.maxstep*2)
-        print('rebase_rad ')
-        print(self.maxstep)
-        print(rebase_rad)
+        
         
         
         promising_nodes = []
@@ -721,6 +728,7 @@ class RRTplanner:
                 self.current_best_cost = self.cost[n2]
                 self.goalFlag  = False
                 self.alreadyFound = True
+                self.number_of_path_found   += 1
                 
             elif self.goalFlag and self.alreadyFound :
                 
@@ -729,6 +737,7 @@ class RRTplanner:
                     self.goalstate = n2
                     self.current_best_cost = self.cost[n2]
                     self.goalFlag  = False
+                    self.number_of_path_found   += 1
                 else :
                     
                     self.goalFlag  = False
@@ -767,14 +776,14 @@ class RRTplanner:
         return self.alreadyFound
 
     def getFinalPath(self):
-        path_resoultion =  len(self.global_path[1][:,0])
+        path_resoultion =  len(self.parent_path[1][:,0])
         if self.alreadyFound:
-            self.best_final_path=np.flipud(self.global_path[self.goalstate][:path_resoultion-1,:]).tolist() # the last node is always eliminated because it is equal to start of the following path
+            self.best_final_path=np.flipud(self.parent_path[self.goalstate][:path_resoultion-1,:]).tolist() # the last node is always eliminated because it is equal to start of the following path
             self.best_final_path_nodes = [self.goalstate]
             totalcost = self.cost[self.goalstate]
             parent    = self.parent[self.goalstate]
             while (parent != 0):
-                self.best_final_path+=(np.flipud(self.global_path[parent][:path_resoultion-1,:]).tolist())
+                self.best_final_path+=(np.flipud(self.parent_path[parent][:path_resoultion-1,:]).tolist())
                 self.best_final_path_nodes.append(parent) #except starting zero 
                 parent = self.parent[parent]
         
@@ -840,12 +849,16 @@ class RRTplanner:
         return self.nodes, self.parent
 
 
-def writepath2txt(filename,path) :
-    
-        f = open(filename,'w+')
-       
-        for path in zip(path) :
+    def writepath2txt(self,filename) :
+        f = open(filename,'w')
+        counter = 0
+        for pathspec in  self.start2goal_paths_lists :
+            path = pathspec['path']
+            length = pathspec['length']
+            f.write('path number : {}'.format(counter)+'\n')
+            f.write('path length : {}'.format(length)+'\n')
             for cord in path :
-               f.write(str(cord)+'\n')
+                f.write(str(cord)+'\n')
+            counter = counter +1
         f.close()
     

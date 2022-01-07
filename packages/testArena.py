@@ -1,8 +1,8 @@
 import pygame
-import sys
+import sys,os
 import numpy as np
 import RobotPlanningRoutines.ObstaclesFactory as factory
-from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot,writepath2txt
+from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
 from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
@@ -26,7 +26,7 @@ running       = True
 robot_rad     = 20
 is_path_found = False
 target_index  = 0
-
+path_number = 0
 # instance map and robot 
 motionMap            = EnvMap(start,goal,dimensions)
 myrobot              = Robot(start[0],start[1],start[2],dimension=(45,25))
@@ -55,45 +55,47 @@ free_obtacles = motionMap.check_feasibility()
 RRTpathFinder         = RRTplanner(start, goal,dimensions,free_obtacles,maxstep=maxRRTstep,robot=myrobot)
 
 motionMap.draw_obstacles()
-
 myrobot.reset_state(start)
 myrobot.draw_robot(motionMap.map)
-new_path=False
 
 goalArea = pygame.Rect((goal[0]-maxRRTstep/2,goal[1]-maxRRTstep/2),(maxRRTstep,maxRRTstep))
-pygame.draw.rect(motionMap.map,(0,0,200,0.05),goalArea)
+pygame.draw.rect(motionMap.map,(0,0,200,0.9),goalArea)
 
+# save best paths as output
 
-while running:
+log_path_file = 'paths.txt'
+max_iterations = 2000
+number_of_paths = 1
+        
+while running and i <max_iterations:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
            running = False
            pygame.quit()
            sys.exit()
     
-    if  i <10000:      
+    if  i <max_iterations:      
         motionMap.draw_startgoal()
-        
         nodes, parent = RRTpathFinder.expand()
-       
         currentDubinPath = RRTpathFinder.local_best_path
+        
         if not len(currentDubinPath)==0 : 
             pygame.draw.lines(motionMap.map, motionMap.blue,False,tuple(currentDubinPath[:,:2]))
         
         myrobot.reset_state(nodes[-1])
         #myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
-
+        print('Number of nodes : {}'.format(RRTpathFinder.numberOfNodes()))
         
-        if RRTpathFinder.isOnePathFound():
+        if RRTpathFinder.isOnePathFound() and RRTpathFinder.get_number_of_paths_found()==number_of_paths:
             current_best_path,total_cost = RRTpathFinder.getFinalPath()
             motionMap.drawPath(current_best_path)
-        
-        #nodes, parent = RRTpathFinder.rebase()
-         
+            RRTpathFinder.save_optimal_path(current_best_path,total_cost)
+            number_of_paths += 1
         i += 1
     
     pygame.display.update()
     
+RRTpathFinder.writepath2txt(log_path_file)
 
 
     
