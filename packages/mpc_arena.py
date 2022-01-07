@@ -105,6 +105,7 @@ counter = 0
 for ii in range(200) :
      print(mpc_controller.state)
      target = target_state[counter,:]
+     print(target)
      u = mpc_controller.mpc_optimal_control(target[:,np.newaxis])
      ax.plot(mpc_controller.state[0],mpc_controller.state[1],'*',linewidth=10)
      
