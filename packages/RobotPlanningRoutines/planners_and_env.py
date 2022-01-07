@@ -586,25 +586,40 @@ class RRTplanner:
 
     def dubin_nearest(self, n):
         """find closest node to the final node inside a certain radius"""
-        rebase_rad = self.maxstep*3
+        rebase_rad = max(300*(np.log(self.numberOfNodes())/self.numberOfNodes())**(1/3),self.maxstep*2)
+        print('rebase_rad ')
+        print(self.maxstep)
+        print(rebase_rad)
+        
+        
         promising_nodes = []
+        
         for i in range(0, n):
             dist = self.euclide_distance(i, n)
             if dist <rebase_rad :
                 promising_nodes.append(i) 
         
+        if len(promising_nodes)==0 :
+            raise ValueError('seach radius to small\nNo solution found inside the search radius')
+        
         nnear = promising_nodes[0]
-        best_dubin_dist,best_path = self.dubin_distance(promising_nodes.pop(0), n)
+        guess = promising_nodes.pop(0)
+        best_dubin_dist,best_path = self.dubin_distance(guess, n)
+        
+        min_cost = self.cost[guess] +  best_dubin_dist
+        
         self.local_best_path = best_path
+        
         for good_node in promising_nodes:
             
             new_dubin_dist,new_path = self.dubin_distance(good_node, n)
-            if best_dubin_dist>new_dubin_dist :
-                
-                best_dubin_dist      = new_dubin_dist
+            new_min_cost = self.cost[good_node] + new_dubin_dist
+            
+            if new_min_cost<min_cost :
+                best_dubin_dist      = new_dubin_dist # best local distance
                 self.local_best_path = new_path
                 nnear                = good_node
-                
+                min_cost             = new_min_cost
         return nnear,best_dubin_dist
     
     def euclidean_nearest(self, n):

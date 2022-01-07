@@ -7,7 +7,7 @@ from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
 pygame.init()
-pygame.font.init()
+#pygame.font.init()
 #myfont = pygame.font.SysFont('Comic Sans MS', 30)
 
 ## TEST ARENA FOR THE RRT FUNCTIONALITIES
@@ -81,7 +81,7 @@ while running:
             pygame.draw.lines(motionMap.map, motionMap.blue,False,tuple(currentDubinPath[:,:2]))
         
         myrobot.reset_state(nodes[-1])
-        myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
+        #myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
 
         
         if RRTpathFinder.isOnePathFound():
