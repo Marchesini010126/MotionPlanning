@@ -63,7 +63,9 @@ motionMap.draw_obstacles()
 
 
 RRTpathFinder         = RRTplanner(start, goal,dimensions,free_obtacles,maxstep=maxRRTstep,robot=myrobot)
-RRTpathFinder.activate_rebasing(500) # actvates rebasing
+
+#activate RRTstar
+RRTpathFinder.activate_rebasing(500) # actvates rebasing   good between 100-500
 
 goalArea = pygame.Rect((goal[0]-maxRRTstep/2,goal[1]-maxRRTstep/2),(maxRRTstep,maxRRTstep))
 pygame.draw.rect(motionMap.map,(0,0,200,0.9),goalArea)
@@ -71,7 +73,7 @@ pygame.draw.rect(motionMap.map,(0,0,200,0.9),goalArea)
 # save best paths as output
 
 log_path_file = 'paths.txt'
-max_iterations = 2000
+max_iterations = 10000
 number_of_paths = 1       # simple counter used to save each new path only once
     
 
@@ -93,7 +95,9 @@ while running and i <max_iterations:
             pygame.draw.lines(motionMap.map, motionMap.blue,False,tuple(currentDubinPath[:,:2]))
         
         myrobot.reset_state(nodes[-1])
-        myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
+        if not RRTpathFinder.isOnePathFound():
+           myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
+        
         print('Number of nodes : {}'.format(RRTpathFinder.numberOfNodes()))
         
         if RRTpathFinder.isOnePathFound() and RRTpathFinder.get_number_of_paths_found()==number_of_paths:
