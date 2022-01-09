@@ -73,7 +73,7 @@ class Dubin:
         
         path(np.array(l, n, m)) : list of passible paths from start configuration to given points
                                 n = number of points in a path 
-                                m = 5 (x,y,theta, v, phi)
+                                m = 3 (x,y,theta)
                                 l = number of paths 
                                 
                                 note : the paths are sorted from shortest to longest
@@ -118,7 +118,9 @@ class Dubin:
         sorted = np.append(sorted, [self.paths[np.argmin(lengths)], self.paths[np.argmax(lengths)]])
 
         self.paths = sorted.reshape((2, self.res, 5))
-        return self.paths, np.sort(lengths)
+        self.actions = self.paths[:,:,3:]
+        self.paths = self.paths[:,:,:3]
+        return self.paths, np.sort(lengths), self.actions
 
     def plot(self):
 
@@ -192,7 +194,7 @@ if __name__== '__main__' :
 
     d = Dubin(q0, point, Rturn=radius, n_samples=25)
 
-    paths = d.make_path()
+    paths, lengths, actions = d.make_path()
 
-    print(paths)
+    print(paths, actions)
     d.plot()

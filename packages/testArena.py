@@ -2,7 +2,7 @@ import pygame
 import sys
 import numpy as np
 import RobotPlanningRoutines.ObstaclesFactory as factory
-from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot,writepath2txt
+from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot#,#writepath2txt
 from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
