@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 class Dubin:
 
-    def __init__(self, start_configuration, goal, Rturn=20., n_samples=40):
+    def __init__(self, start_configuration, goal, Rturn=1., robot_obj=None, n_samples=20):
         
         # ----------DESCRIPTION--------------
         # initialise class
@@ -16,8 +16,16 @@ class Dubin:
         #                       path
         # -----------OUTPUT------------------
         # update state 
-        
-        self.radius     = Rturn           
+
+        if robot_obj:
+            self.radius = robot_obj.vmax/robot_obj.maxyaw
+            self.v      = robot_obj.vmax
+            self.phi    = robot_obj.phi_max
+        else:
+            self.radius = Rturn
+            self.v = 0.
+            self.phi = 0.
+
         self.start_conf = start_configuration 
         self.pos0       = np.array(start_configuration[:2])
         self.pos1       = np.array(goal)
@@ -30,7 +38,7 @@ class Dubin:
         self.paths = np.array([])
 
     def get_circles(self, pos, theta):
-        """gets staring turning circles"""
+        """gets starting turning circles"""
         cl = pos + self.radius * np.array([np.cos(theta + np.pi / 2), np.sin(theta + np.pi / 2)])
         cr = pos + self.radius * np.array([np.cos(theta - np.pi / 2), np.sin(theta - np.pi / 2)])
 
@@ -63,7 +71,7 @@ class Dubin:
         
         Return
         
-        path(np.array(n,m,l)) : list of passible paths from start configuration to given points
+        path(np.array(l, n, m)) : list of passible paths from start configuration to given points
                                 n = number of points in a path 
                                 m = 3 (x,y,theta)
                                 l = number of paths 
@@ -74,7 +82,8 @@ class Dubin:
         
         """
         
-        self.paths = np.zeros((2, self.res, 3))
+        self.paths = np.zeros((2, self.res, 5))
+        self.paths[:][:][-2] += self.v
         lengths = np.array([])
 
         i = 0
@@ -90,15 +99,16 @@ class Dubin:
                 for a in np.linspace(path[0], path[0] + length[0], alpha_samples):
                     p = circle[0] + self.radius * np.array([np.cos(a), np.sin(a)])
                     th = a + circle[-1] * np.pi/2
-                    self.paths[i][n][:-1] += p
-                    self.paths[i][n][-1] += th
+                    self.paths[i][n][:2] += p
+                    self.paths[i][n][2] += th
+                    self.paths[i][n][-1] += circle[-1]*self.phi
                     n += 1
 
                 V = self.pos1 - path[2]
                 th = np.arctan2(V[1], V[0])
                 for l in np.linspace(path[2], self.pos1, L_samples):
-                    self.paths[i][n][:-1] = l
-                    self.paths[i][n][-1] += th
+                    self.paths[i][n][:2] = l
+                    self.paths[i][n][2] += th
                     n += 1
 
             i += 1
@@ -107,8 +117,10 @@ class Dubin:
         sorted = np.array([])
         sorted = np.append(sorted, [self.paths[np.argmin(lengths)], self.paths[np.argmax(lengths)]])
 
-        self.paths = sorted.reshape((2, self.res, 3))
-        return self.paths, np.sort(lengths)
+        self.paths = sorted.reshape((2, self.res, 5))
+        self.actions = self.paths[:,:,3:]
+        self.paths = self.paths[:,:,:3]
+        return self.paths, np.sort(lengths), self.actions
 
     def plot(self):
 
@@ -180,9 +192,9 @@ if __name__== '__main__' :
 
     radius = 1.5
 
-    d = Dubin(q0, point, radius, 25)
+    d = Dubin(q0, point, Rturn=radius, n_samples=25)
 
-    paths = d.make_path()
+    paths, lengths, actions = d.make_path()
 
-    print(paths)
+    print(paths, actions)
     d.plot()

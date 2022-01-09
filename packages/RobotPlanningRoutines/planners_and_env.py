@@ -627,7 +627,7 @@ class RRTplanner:
     
     def dubin_distance(self, n1, n2):
         """find distance betweeen two points"""
-        pathfinder         = Dubin(self.nodes[n1],self.nodes[n2][:2],Rturn=self.robot.vmax/self.robot.maxyaw,n_samples=self.path_resolution)
+        pathfinder         = Dubin(self.nodes[n1],self.nodes[n2][:2],robot_obj=self.robot,n_samples=self.path_resolution) #Rturn=self.robot.vmax/self.robot.maxyaw
         paths,pathlengths  = pathfinder.make_path()
         minDistance        = pathlengths[0] # take the shortest path
         
