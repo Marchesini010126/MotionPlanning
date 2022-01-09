@@ -41,13 +41,19 @@ myrobot.set_state_penalty(np.eye(3)*1E1)
 
 # DEFINE CAR MODEL
 myrobot.set_max_yaw_rate(60*np.pi/180) #rad/s
-myrobot.set_max_steering(40*np.pi/180) #rad
+myrobot.set_car_baseline(2)            #m
 myrobot.set_max_speed(40)              #m/s
 myrobot.set_min_speed(0)               #m/s
+phi = np.arctan(myrobot.maxyaw*myrobot.L /  myrobot.vmax)
+myrobot.set_max_steering(phi) #rad
 myrobot.init_car()
 
 
 #randomObstacles_list  = motionMap.createRandomMap(10,['polygon','rectangle'],minRadius=20,maxRadius = 40)
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/RRTmerge
 
 #CREATE MAP
 randomObstacles_list  = motionMap.load_room_map("./maps/MAP7.txt")
@@ -56,6 +62,15 @@ print(myrobot.radius)
 motionMap.add_obstacles(randomObstacles_list)
 motionMap.draw_obstacles()
 
+<<<<<<< HEAD
+=======
+
+randomObstacles_list  = motionMap.load_room_map("maps/MAP3.txt")
+motionMap.add_obstacles(randomObstacles_list)
+free_obtacles = motionMap.check_feasibility()
+
+
+>>>>>>> origin/RRTmerge
 RRTpathFinder         = RRTplanner(start, goal,dimensions,randomObstacles_list,maxstep=maxRRTstep,robot=myrobot)
 
 motionMap.draw_obstacles()
@@ -67,9 +82,17 @@ new_path=False
 goalArea = pygame.Rect((goal[0]-maxRRTstep/2,goal[1]-maxRRTstep/2),(maxRRTstep,maxRRTstep))
 pygame.draw.rect(motionMap.map,(0,0,200,0.05),goalArea)
 
+<<<<<<< HEAD
 log_path_file = 'paths.txt'
 max_iterations = 5000
 number_of_paths = 1       # simple counter used to save each new path only once
+=======
+
+log_path_file = 'paths.txt'
+max_iterations = 5000
+number_of_paths = 1       # simple counter used to save each new path only once
+
+>>>>>>> origin/RRTmerge
 
 while running:
     for event in pygame.event.get():
@@ -88,6 +111,10 @@ while running:
             pygame.draw.lines(motionMap.map, motionMap.blue,False,tuple(currentDubinPath[:,:2]))
         
         myrobot.reset_state(nodes[-1])
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/RRTmerge
         if not RRTpathFinder.isOnePathFound():
                myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
         
@@ -95,6 +122,15 @@ while running:
         print('Iteration       : {}/{}'.format(i,max_iterations))
         if RRTpathFinder.isOnePathFound() and RRTpathFinder.get_number_of_paths_found()==number_of_paths:
             t_end = time.time()
+<<<<<<< HEAD
+=======
+
+        #myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
+
+        
+        if RRTpathFinder.isOnePathFound():
+
+>>>>>>> origin/RRTmerge
             current_best_path,total_cost = RRTpathFinder.getFinalPath()
             motionMap.drawPath(current_best_path)
         
