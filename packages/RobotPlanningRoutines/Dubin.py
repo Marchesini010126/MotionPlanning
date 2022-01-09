@@ -120,6 +120,7 @@ class Dubin:
         self.paths = sorted.reshape((2, self.res, 5))
         self.actions = self.paths[:,:,3:]
         self.paths = self.paths[:,:,:3]
+        
         return self.paths, np.sort(lengths), self.actions
 
     def plot(self):
