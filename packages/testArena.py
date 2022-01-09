@@ -15,7 +15,7 @@ pygame.init()
 
 
 dimensions = (1200,600)    # map dimension
-start      = (150, 100,0)  # start configuration
+start      = (100, 50,0)  # start configuration
 goal       = (1100, 500,0) # goal configuration
 
 obsNum     = 200           # number of obstacles
@@ -54,15 +54,14 @@ myrobot.init_car()
 #randomObstacles_list  = motionMap.createRandomMap(10,['polygon','rectangle'],minRadius=20,maxRadius = 40)
 
 #CREATE MAP
-randomObstacles_list  = motionMap.load_room_map("MAP3.txt")
+randomObstacles_list  = motionMap.load_room_map("./maps/MAP7.txt")
 
-
+print(myrobot.radius)
 motionMap.add_obstacles(randomObstacles_list)
-free_obtacles = motionMap.check_feasibility() #   check that no obstacle is above the start and goal
 motionMap.draw_obstacles()
 
 
-RRTpathFinder         = RRTplanner(start, goal,dimensions,free_obtacles,maxstep=maxRRTstep,robot=myrobot)
+RRTpathFinder         = RRTplanner(start, goal,dimensions,randomObstacles_list,maxstep=maxRRTstep,robot=myrobot)
 
 #activate RRTstar
 RRTpathFinder.activate_rebasing(500) # actvates rebasing   good between 100-500
@@ -73,7 +72,7 @@ pygame.draw.rect(motionMap.map,(0,0,200,0.9),goalArea)
 # save best paths as output
 
 log_path_file = 'paths.txt'
-max_iterations = 10000
+max_iterations = 5000
 number_of_paths = 1       # simple counter used to save each new path only once
     
 
@@ -99,7 +98,7 @@ while running and i <max_iterations:
            myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
         
         print('Number of nodes : {}'.format(RRTpathFinder.numberOfNodes()))
-        
+        print('Iteration       : {}/{}'.format(i,max_iterations))
         if RRTpathFinder.isOnePathFound() and RRTpathFinder.get_number_of_paths_found()==number_of_paths:
             t_end = time.time()
             current_best_path,total_cost = RRTpathFinder.getFinalPath()

@@ -68,17 +68,18 @@ class EnvMap():
         
         self.obstacles=new_list_of_obstacles
     
-    def reset_obstacles(self,new_list_of_obstacles) :
+    def reset_obstacles(self,new_list_of_obstacles,robot_radius) :
         # ----------DESCRIPTION--------------
         # reset obstacles
         # -----------INPUT-------------------
         #  new_list_of_obstacles     ---> list of dictionaries
+
         # -----------OUTPUT------------------
         # update state 
         
         self.obstacle_list=new_list_of_obstacles
     
-    def check_feasibility(self):
+    def check_feasibility(self,robot_radius=0):
         # eliminated the obstacles that are 
         # exactly on the goal or the start position
         # retruns a list to update the EnvMap class
@@ -86,19 +87,25 @@ class EnvMap():
         # for now no angle checks . we assume
         # every possible tilted orientation 
         # at a given position will be fine
-        obs = self.obstacles.copy()
+        obs   = self.obstacles.copy()
         start = np.asarray(self.start[:2],dtype=np.float32)
         goal  = np.asarray(self.goal[:2],dtype=np.float32)
 
         for n,obstacle in enumerate(obs) :
             
-            check1    = np.sum((obstacle['center']-start)**2)
-            check2    = np.sum((obstacle['center']-goal)**2)
+            center    = np.asarray(obstacle["center"],np.float64)
+            print(center)
+            print(start)
+            dist2start    = np.sqrt(np.sum((center-start)**2))
+            dist2goal     = np.sqrt(np.sum((center-goal)**2))
+            
+            check1        = dist2start<robot_radius+obstacle['radius']
+            check2        = dist2goal<robot_radius+obstacle['radius']
+            
+            print(check1)
             #safety limit of three radius
-            if check1< (4*obstacle['radius'])**2 or check2< (4*obstacle['radius'])**2 :
-                obs.pop(n)
-        
-        self.obstacles = obs
+            if check1  or check2   :
+                self.obstacles.pop(n)
         
         return self.obstacles
         
@@ -512,6 +519,8 @@ class RRTplanner:
         self.rebase_tree            = False   #activate rebasing 
         self.path_resolution        = 20      # number of points for each dubin path
         self.time_elapsed           = None    #total elapsed time 
+        self.map_name               = 'Undefined'
+        
         # obstacles
         self.obstacles = obsList # list of obstacles follwing the obstacles definitionnisnide ObstacleFactory
         
@@ -525,7 +534,11 @@ class RRTplanner:
         # the robot definition to plan the path
          
         self.robot = robot # robot instanciation
-        
+    
+    
+    def set_map_name(self,name='Undefined'):
+        """set map name"""
+        self.map_name = name
     
     def set_path_resolution(self,res):
         """set resolution (number of points) for each dubin path"""
@@ -879,6 +892,7 @@ class RRTplanner:
         f.write('----------------------------'+'\n')
         f.write('RRT search Summary          '+'\n')
         f.write('----------------------------'+'\n')
+        f.write('Map Name               : {}'.format(self.number_of_path_found)+'\n')
         f.write('Total paths found      : {}'.format(self.number_of_path_found)+'\n')
         f.write('Total number of nodes  : {}'.format(self.numberOfNodes())+'\n')
         f.write('Total elapsed time     : {} s'.format(self.time_elapsed)+'\n')
@@ -887,17 +901,21 @@ class RRTplanner:
         f.write(''+'\n')
         f.write(''+'\n')
         
-        for pathspec in  self.start2goal_paths_lists :
-            path   = pathspec['path']
-            length = pathspec['length']
-            time   = pathspec['time']
+        if len(self.start2goal_paths_lists) >0 : 
+            for pathspec in  self.start2goal_paths_lists :
+                path   = pathspec['path']
+                length = pathspec['length']
+                time   = pathspec['time']
+                
+                f.write('Path number   : {}'.format(counter)+'\n')
+                f.write('Path length   : {}'.format(length)+'\n')
+                f.write('Time required : {} s'.format(time)+'\n')
+                f.write('******* List of nodes ******* '+'\n')
+                for cord in path :
+                    f.write(str(cord)+'\n')
+                counter = counter +1
+        else :
+            f.write('No path to Goal Found\n')
             
-            f.write('Path number   : {}'.format(counter)+'\n')
-            f.write('Path length   : {}'.format(length)+'\n')
-            f.write('Time required : {} s'.format(time)+'\n')
-            f.write('******* List of nodes ******* '+'\n')
-            for cord in path :
-                f.write(str(cord)+'\n')
-            counter = counter +1
         f.close()
-    
+        
