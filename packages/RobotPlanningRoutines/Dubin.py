@@ -18,13 +18,13 @@ class Dubin:
         # update state 
 
         if robot_obj:
-            self.radius = robot_obj.vmax/robot_obj.maxyaw
+            self.radius = abs(robot_obj.vmax/robot_obj.maxyaw)
             self.v      = robot_obj.vmax
             self.phi    = robot_obj.phi_max
         else:
             self.radius = Rturn
-            self.v = 0.
-            self.phi = 0.
+            self.v = 1.
+            self.phi = 1.
 
         self.start_conf = start_configuration 
         self.pos0       = np.array(start_configuration[:2])
@@ -83,7 +83,7 @@ class Dubin:
         """
         
         self.paths = np.zeros((2, self.res, 5))
-        self.paths[:][:][-2] += self.v
+        self.paths[:,:,-2] += self.v
         lengths = np.array([])
 
         i = 0
