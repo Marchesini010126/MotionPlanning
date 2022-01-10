@@ -32,8 +32,9 @@ motionMap            = EnvMap(start,goal,dimensions)
 myrobot              = Robot(start[0],start[1],start[2],dimension=(45,25))
 
 # DEFINE CAR MODEL
-myrobot.set_car_spec(vel_max=40,max_yaw_rate=60*np.pi/180)                  # m/s
 myrobot.set_baseline(baseline=45) # same as cal width
+myrobot.set_car_spec(vel_max=40,max_yaw_rate=60*np.pi/180)                  # m/s
+
 
 #randomObstacles_list  = motionMap.createRandomMap(20,['polygon','rectangle'],minRadius=20,maxRadius = 40)
 
