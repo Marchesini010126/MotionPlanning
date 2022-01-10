@@ -1,13 +1,12 @@
 import numpy as np
-import RobotPlanningRoutines.ObstaclesFactory as factory
+import packages.RobotPlanningRoutines.ObstaclesFactory as factory
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 
-from RobotPlanningRoutines.planners_and_env import EnvMap
-from RobotPlanningRoutines.CollisionChecks  import CircleCollision
-from RobotPlanningRoutines.CollisionChecks  import GJK
-
+from packages.RobotPlanningRoutines.planners_and_env import EnvMap
+from packages.RobotPlanningRoutines.CollisionChecks  import CircleCollision
+from packages.RobotPlanningRoutines.CollisionChecks  import GJK
 
 
 # Use the simple circcle collision check between two polygonal obstacles

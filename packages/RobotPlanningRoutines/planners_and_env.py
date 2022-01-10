@@ -94,15 +94,14 @@ class EnvMap():
         for n,obstacle in enumerate(obs) :
             
             center    = np.asarray(obstacle["center"],np.float64)
-            print(center)
-            print(start)
+
             dist2start    = np.sqrt(np.sum((center-start)**2))
             dist2goal     = np.sqrt(np.sum((center-goal)**2))
             
             check1        = dist2start<robot_radius+obstacle['radius']
             check2        = dist2goal<robot_radius+obstacle['radius']
             
-            print(check1)
+
             #safety limit of three radius
             if check1  or check2   :
                 self.obstacles.pop(n)
@@ -261,64 +260,36 @@ class Robot():
         # state of the system
         self.x      = x    # m     x of the baricenter
         self.y      = y    # m     y of the baricenter
-        self.vx     = 0.0   # m/s
-        self.yaw    = 0.0   # rad   angle of the car with the global frame (0 = aligned with x-axis)
-        self.phi    = 0.0   # rad   angle of the wheels with local x-axis (0 = forward, negative = left).
+        self.yaw    = yaw   # rad   angle of the car with the global frame (0 = aligned with x-axis)
+        
                              #       Combined w/ velocity it causes yaw rate
-        self.state   = np.array([self.x,self.y,self.yaw])
-         
-        # dynamic parameters
-        self.dt        = 0.01 # s         # integration step
-        self.mass      = 10   # kg        # mass
-        self.max_phi   = np.pi / 8        # rad   max steering angle of the wheels
+        self.state     = [self.x,self.y,self.yaw]
         
         # obtaine robot vertices
         rect          = ObstaclesFactory.createRectangle(dimension[0],dimension[1])       
         self.vertices = rect['vertices']  # list of vertices of the rectangle
         self.radius   = rect['radius']    # bounding radius
+        self.L        = dimension[0]      # m   length of wheels base line
+    
+    
+    def initialise_sprite(self,image_file) :
         
-        self.L        = dimension[0]      # m   length of wheel base
-    
-    
-    def set_time_horizon(self,Ts=10):
-        # horizon of the MPC controller
-        self.T = Ts
-    def set_n_steps(self,nsteps=20):
-        #define number of the steps in the time horison
-        self.n_steps = nsteps
-    def set_car_baseline(self,L=0.30):
-        #define car baseline
-        self.L   = L
-    def set_max_speed(self,vmax=1):
-        self.vmax=vmax
-    def set_min_speed(self,vmin=0):
-            self.vmin=vmin
-    def set_max_steering(self,phi=1):
-        # in radians
-            self.phi_max=phi
-    def set_max_yaw_rate(self,maxyaw):
-        # in radians/s
-            self.maxyaw=maxyaw  
-    def set_control_penalty(self,Q=np.eye(2)):
-        # define control penalty matrix
-        # for the mpc definition
-        #  sum(x.T R x + u.T Q u)
+        self.image_file = image_file
+        self.image_original = pygame.image.load(self.image_file).convert()
+        self.image_original = pygame.transform.scale(self.image_original, (85, 65)) 
+        self.rect_original  = self.image_original.get_rect()
+        self.rect_original.center = (self.x,self.y)
+        self.image                = pygame.transform.scale(self.image_original, (85, 65)) 
         
-        self.Q = np.sqrt(Q)
-        # note -> the root square is taken because of 
-        # the optimization problem formulation
+    def set_car_spec(self,vel_max=1,max_yaw_rate=10):
+        """set car max yawrate and speed"""
+        self.vmax   = vel_max
+        self.maxyaw = max_yaw_rate
+        self.maxphi         = np.arctan(self.maxyaw*self.L /self.vmax)
     
-    def set_state_penalty(self,R=np.eye(2)):
-        # define state penalty matrix
-        # for the mpc definition
-        # sum(x.T R x + u.T Q u)
+    def set_baseline(self,baseline = 10):
+        self.L = baseline
         
-        self.R = np.sqrt(R)
-        # note -> the root square is taken because of 
-        # the optimization problem formulation
-    
-    '''to eliminate''' 
-    
     def set_obstacles(self,obstacles_list=None) :
         # define obstacles dictionary with bounding radius
         # input :
@@ -332,9 +303,32 @@ class Robot():
            
         else :
             self.obstacles = obstacles_list
+    
+    # def car_step(self,u) :
+    #     """takes the control speed and phi and returns new state of the system""" 
         
-    def init_car(self):
+    #     v   = u[0]
+    #     phi = u[1]
         
+    #     self.x += v*np.cos([self.yaw])*self.dt
+    #     self.y += v*np.sin([self.yaw])*self.dt
+    #     self.yaw += v/self.L*np.tan(phi)*self.dt
+         
+        
+    def step(self,control,dt) :
+        """ updates the state of the system given the control input 
+        # should be given
+        
+         Input 
+        
+           control       :  np.array([v,phi])
+        
+                        v       --> speed          [m/s]
+                        phi     --> steering angle [rad/s]
+           
+           dt           :actuation time
+                        
+        """
         # define system variables
         x     = MX.sym("x")
         y     = MX.sym("y")
@@ -349,15 +343,15 @@ class Robot():
         # function so that state_next = int(f(state,u),t0,t1)
         # FOR LINEAR SYSTEMS IT IS EASY. FOR NON LINEAR ONES IT IS NOT
 
-        state = vcat([x,y,theta])
-        u     = vcat([v,phi])
+        state = hcat([x,y,theta])
+        u     = hcat([v,phi])
         
         ode = {"x"   : state,
                 "p"   : u,
-                "ode" : vcat([u[0]*cos(state[2]),u[0]*sin(state[2]),u[0]/self.L*tan(u[1])])}
+                "ode" : hcat([u[0]*cos(state[2]),u[0]*sin(state[2]),u[0]/self.L*tan(u[1])])}
 
         # define integration options
-        options = {"tf"                        : self.T/self.n_steps, 
+        options = {"tf"                        : dt, 
                     "simplify"                 : True,
                     "number_of_finite_elements": 4}
 
@@ -373,84 +367,28 @@ class Robot():
         
         # set optimiser for mcp control loop
         # optimizer
-        # define optimization cost 
+        # define optimization cost
         
-    def step(self,control) :
-        """ updates the state of the system given the control input 
-        # should be given
-        
-         Input 
-        
-           control       :  np.array([v,phi])
-        
-                        v       --> speed          [m/s]
-                        phi     --> steering angle [rad/s]
-                        
-        """
         
         next_state = self.step_function(self.state,control)
-        self.state = np.array(next_state)
+        self.state = next_state
+    
         self.x=self.state[0,0]
         self.y=self.state[1,0]
         self.yaw=self.state[2,0]
         
-    
-    
-    def mpc_optimal_control_action(self,target_state) :
-        # take an mpc step toward the target using the curret state
-        ## Input 
-        #
-        # target_state :  np.array([x,y,theta])   initial state of the system
-        #                  
-        #                 x     --> x-position [m]
-        #                 y     --> y-position [m]
-        #                 theta --> heading [rad]
+    def update_sprite(self) :
         
-        self.optimser = casadi.Opti()
+        gray                = (247,247,247) 
+        self.image          = pygame.transform.scale(self.image_original, (85, 65)) 
+        
+        
+        self.image  = pygame.transform.rotate(self.image_original, -90-self.yaw*180/np.pi)
+        
+        self.rect           = self.image.get_rect()
+        self.rect.center    = (self.x,self.y) # save unrotated image center
+        self.image.set_colorkey(gray)
 
-        # define the varibles
-        x = self.optimser.variable(3,self.n_steps+1) # for n+1 steps
-        u = self.optimser.variable(2,self.n_steps)   # for n_steps 
-        
-        obstacles_cost = 0.0
-        # add kinematic constraints
-        for ii in range(self.n_steps) :
-            self.optimser.subject_to(x[:,ii+1]==self.step_function(x[:,ii],u[:,ii])) # system dynamics constraint  
-            self.optimser.subject_to([-self.phi_max<=u[1,ii],u[1,ii]<= self.phi_max])
-            self.optimser.subject_to([self.vmin<=u[0,ii],u[0,ii]<= self.vmax])
-            self.optimser.subject_to([-self.maxyaw<=u[0,ii]/self.L*tan(u[1,ii]),self.maxyaw >=u[0,ii]/self.L*tan(u[1,ii])])
-            try :
-                for obstacle in self.obstacles :
-                    center = obstacle['center'][:,np.newaxis]
-                    distance = obstacle['radius'] + self.radius
-                    self.optimser.subject_to((x[0,ii]-center[0])**2+(x[1,ii]-center[1])**2 > distance**2) # system dynamics constraint  
-                    self.optimser.minimize(1/(x[0,ii]-center[0])**2+(x[1,ii]-center[1])**2)
-            except  AttributeError :
-                pass
-        
-        # initial state constraint
-        self.optimser.subject_to(x[:,0] == self.state)   
-        self.optimser.minimize(sumsqr(self.R@(x-target_state))+sumsqr(self.Q@u))
-    
-
-        #solve the problem
-        #using interior point method 
-        opts   = {'ipopt.print_level': 0, 'print_time': 0, 'ipopt.sb': 'yes'}
-        s_opts = {'max_iter': 500}
-        
-        self.optimser.solver('ipopt',opts,s_opts)
-        
-        try :
-           sol = self.optimser.solve()
-        except :
-           self.optimser.debug.show_infeasibilities()
-           return
-       
-        control              = sol.value(u)[:,0]  # take only the first optimal control 
-        self.predicted_state = sol.value(x)       # save predicted state
-        
-        return control
-    
     
     def reset_state(self,state=(0,0,0)):
         self.x,self.y,self.yaw= state  
@@ -517,6 +455,8 @@ class RRTplanner:
         self.local_best_path   = []   # saves the local path between two nodes 
         self.parent_path       = [[]] # strores all the paths from parent to child node
         self.parent_actions    = [[]] # stores actions needed to follow the path
+        self.actuation_time    = [0]
+        
         
         self.current_best_cost = None # best cost to path
         self.start2goal_paths_lists = []
@@ -544,6 +484,7 @@ class RRTplanner:
     def set_map_name(self,name='Undefined'):
         """set map name"""
         self.map_name = name
+    
     
     def set_path_resolution(self,res):
         """set resolution (number of points) for each dubin path"""
@@ -575,9 +516,9 @@ class RRTplanner:
     def stop_clock(self) :
         self.time_elapsed = time.time()-self.t_start 
          
-    def save_optimal_path(self,path,length,time=None):
+    def save_optimal_path(self,path,length,actions,time=None):
         """append optimal path to the current list of optimal paths"""
-        self.start2goal_paths_lists.append({'path':path,'length':length,'time':time})
+        self.start2goal_paths_lists.append({'path':path,'length':length,'time':time,'actions':actions})
     
     def get_number_of_paths_found(self):
         return self.number_of_path_found
@@ -606,6 +547,9 @@ class RRTplanner:
         """add the local best path from prent to child"""
         self.parent_path.insert(n,self.local_best_path) # save only the position and not the angle
         self.parent_actions.insert(n,self.local_best_actions)
+        self.actuation_time.insert(n,self.local_best_dist/self.robot.vmax/self.path_resolution)
+
+  
         
     def removePath(self,n):
         """add the local best path from prent to child"""
@@ -640,6 +584,7 @@ class RRTplanner:
         minDistance        = pathlengths[0] # take the shortest path
         currentpath        = paths[0]
         best_actions       = actions[0]
+        
         
         return minDistance,currentpath,best_actions
     
@@ -678,6 +623,7 @@ class RRTplanner:
         
         self.local_best_path    = best_path
         self.local_best_actions = best_actions
+        self.local_best_dist    = best_dubin_dist
         
         for good_node in promising_nodes:
             
@@ -696,6 +642,7 @@ class RRTplanner:
                 
                 self.local_best_path    = new_path
                 self.local_best_actions = new_actions
+                self.local_best_dist    = new_dubin_dist
                 
                 nnear                = good_node
                 min_cost             = new_min_cost
@@ -851,17 +798,30 @@ class RRTplanner:
 
     def getFinalPath(self):
         path_resoultion =  len(self.parent_path[1][:,0])
+        
         if self.alreadyFound:
-            self.best_final_path=np.flipud(self.parent_path[self.goalstate][:path_resoultion-1,:]).tolist() # the last node is always eliminated because it is equal to start of the following path
+            self.best_final_path       = np.flipud(self.parent_path[self.goalstate][:path_resoultion,:]).tolist() # the last node is always eliminated because it is equal to start of the following path
+            self.best_final_actions    = np.flipud(self.parent_actions[self.goalstate][:path_resoultion-1,:]).tolist() # the last node is always eliminated because it is equal to start of the following path
             self.best_final_path_nodes = [self.goalstate]
+            self.best_actuation_time   = [self.actuation_time[self.goalstate]]*self.path_resolution
+            
+            
             totalcost = self.cost[self.goalstate]
             parent    = self.parent[self.goalstate]
+            
             while (parent != 0):
                 self.best_final_path+=(np.flipud(self.parent_path[parent][:path_resoultion-1,:]).tolist())
+                self.best_final_actions+=(np.flipud(self.parent_actions[parent][:path_resoultion-1,:]).tolist())
                 self.best_final_path_nodes.append(parent) #except starting zero 
+                self.best_actuation_time+=[self.actuation_time[parent]]*self.path_resolution
                 parent = self.parent[parent]
-        
-        return self.best_final_path,totalcost
+            
+            # save the actions as (v,phi,dt)
+            
+            self.best_final_actions = [[action[0],action[1],dt] for action,dt in zip(self.best_final_actions,self.best_actuation_time)]
+            
+
+        return self.best_final_path,self.best_final_actions,totalcost
     
     # NOT IMPLEMENTED ANYMORE
     
@@ -898,7 +858,6 @@ class RRTplanner:
     def write_summary2txt(self,filename) :
         
         f = open(filename,'w')
-        counter = 0
         
         ## intro 
         f.write('----------------------------'+'\n')
@@ -909,29 +868,37 @@ class RRTplanner:
         f.write('Total number of nodes  : {}'.format(self.numberOfNodes())+'\n')
         f.write('Total elapsed time     : {} s'.format(self.time_elapsed)+'\n')
         if self.rebase_tree:
-            f.write('Solver     : {} s'.format('RRTstar')+'\n')
+            f.write('Solver                 : {} '.format('RRTstar')+'\n')
         else : 
-            f.write('Solver     : {} s'.format('RRT standard')+'\n')
-        f.write('----------------------------'+'\n')
-        f.write(''+'\n')
-        f.write(''+'\n')
-        f.write(''+'\n')
+            f.write('Solver                 : {} '.format('RRT standard')+'\n')
         
         if len(self.start2goal_paths_lists) >0 : 
             for pathspec in  self.start2goal_paths_lists :
+                
+                counter = 0
                 path   = pathspec['path']
                 length = pathspec['length']
                 time   = pathspec['time']
-                
+                actions   = pathspec['actions']
+                f.write('----------------------------'+'\n')
                 f.write('Path number   : {}'.format(counter)+'\n')
                 f.write('Path length   : {}'.format(length)+'\n')
                 f.write('Time required : {} s'.format(time)+'\n')
-                f.write('******* List of nodes ******* '+'\n')
+                f.write('>>>> Nodes'+'\n')
                 for cord in path :
                     f.write(str(cord)+'\n')
+                f.write('>>>> '+'\n')
+                f.write('>>>> inputs'+'\n')
+                
+                for cord in actions :
+                    f.write(str(cord)+'\n')
+                f.write('>>>> '+'\n')
+                
                 counter = counter +1
         else :
-            f.write('No path to Goal Found\n')
+            
+            f.write('----------------------------'+'\n')
+            f.write('NO PATH TO GOAL FOUND\n')
             
         f.close()
         

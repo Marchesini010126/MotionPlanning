@@ -1,9 +1,9 @@
 import pygame
 import sys
 import numpy as np
-import RobotPlanningRoutines.ObstaclesFactory as factory
-from RobotPlanningRoutines.planners_and_env import EnvMap
-from RobotPlanningRoutines.CollisionChecks import CircleCollision
+import packages.RobotPlanningRoutines.ObstaclesFactory as factory
+from packages.RobotPlanningRoutines.planners_and_env import EnvMap
+from packages.RobotPlanningRoutines.CollisionChecks import CircleCollision
 
 
 # THE FOLLOWING SCRIPTS INTRIDUCES THE READER TO THE 

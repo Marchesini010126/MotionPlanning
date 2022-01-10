@@ -20,7 +20,7 @@ class Dubin:
         if robot_obj:
             self.radius = abs(robot_obj.vmax/robot_obj.maxyaw)
             self.v      = robot_obj.vmax
-            self.phi    = robot_obj.phi_max
+            self.phi    = robot_obj.maxphi
         else:
             self.radius = Rturn
             self.v = 1.

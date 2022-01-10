@@ -1,9 +1,9 @@
 import pygame
 import sys,os
 import numpy as np
-import RobotPlanningRoutines.ObstaclesFactory as factory
-from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
-from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
+import packages.RobotPlanningRoutines.ObstaclesFactory as factory
+from   packages.RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
+from   packages.RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
 pygame.init()
@@ -13,7 +13,7 @@ pygame.init()
 ## Simulates a set of simulations in a loop
 
 output_dir = './OutputSimulations'
-map_dir = "./maps"
+map_dir = "./packages/maps"
 map_names         = [ os.path.join(map_dir,'MAP'+str(num)+'.txt') for num in range(1,8)]
 output_file_names  = [ os.path.join(output_dir,'Simulation'+str(num)+'.txt') for num in range(8)]
 
@@ -33,23 +33,10 @@ path_number   = 0
 motionMap            = EnvMap(start,goal,dimensions)
 myrobot              = Robot(start[0],start[1],start[2],dimension=(45,25))
 
-# DEFINE MPC HORIZON
-myrobot.set_n_steps(4)
-myrobot.set_time_horizon(4)
-
-# DEFINE MPC OPTIMIZATION PENALTIES
-myrobot.set_control_penalty(np.eye(2)*1E1)
-myrobot.set_state_penalty(np.eye(3)*1E1)
 
 # DEFINE CAR MODEL
-myrobot.set_max_yaw_rate(60*np.pi/180) #rad/s
-myrobot.set_max_steering(40*np.pi/180) #rad
-myrobot.set_max_speed(40)              #m/s
-myrobot.set_min_speed(0)               #m/s
-myrobot.reset_state(start)
-myrobot.draw_robot(motionMap.map)
-myrobot.init_car()
-
+myrobot.set_car_spec(vel_max=40,max_yaw_rate=60*np.pi/180)                  # m/s
+myrobot.set_baseline(baseline=45) # same as cal width
 
 for map_name,outputfile in zip(map_names,output_file_names ) :
     running       = True 
@@ -74,7 +61,7 @@ for map_name,outputfile in zip(map_names,output_file_names ) :
     # save best paths as output
 
     
-    max_iterations = 2000
+    max_iterations = 800
     number_of_paths = 1       # simple counter used to save each new path only once
         
 
@@ -102,9 +89,9 @@ for map_name,outputfile in zip(map_names,output_file_names ) :
             print('Iteration       : {}/{}'.format(i,max_iterations))
             if RRTpathFinder.isOnePathFound() and RRTpathFinder.get_number_of_paths_found()==number_of_paths:
                 t_end = time.time()
-                current_best_path,total_cost = RRTpathFinder.getFinalPath()
+                current_best_path,current_best_actions,total_cost = RRTpathFinder.getFinalPath()
                 motionMap.drawPath(current_best_path)
-                RRTpathFinder.save_optimal_path(current_best_path,total_cost,t_end-RRTpathFinder.t_start)
+                RRTpathFinder.save_optimal_path(current_best_path,total_cost,current_best_actions,t_end-RRTpathFinder.t_start)
                 number_of_paths += 1
             i += 1
         

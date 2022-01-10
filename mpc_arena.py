@@ -3,9 +3,9 @@ import cvxpy as cvx
 from   casadi import *
 import matplotlib.pyplot as plt
 import pygame
-from   mpc_test.mpc_helper_functions import Controller_mpc
+from   packages.mpc_test.mpc_helper_functions import Controller_mpc
 import random
-import RobotPlanningRoutines.ObstaclesFactory as factory
+import packages.RobotPlanningRoutines.ObstaclesFactory as factory
 
 # create basic environment 
 screen_width  = 800 

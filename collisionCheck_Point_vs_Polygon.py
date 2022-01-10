@@ -3,12 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
-import sys
+import sys,os
 
-import RobotPlanningRoutines.ObstaclesFactory as factory
-from RobotPlanningRoutines.planners_and_env import EnvMap
-from RobotPlanningRoutines.CollisionChecks  import CircleCollision
-from RobotPlanningRoutines.CollisionChecks  import GJK,minkowskiDifference
+
+sys.path.append(os.path.abspath('../packages/RobotPlanningRoutines'))
+
+import packages.RobotPlanningRoutines.ObstaclesFactory as factory
+from packages.RobotPlanningRoutines.CollisionChecks  import CircleCollision
+from packages.RobotPlanningRoutines.CollisionChecks  import GJK,minkowskiDifference
 
 
 

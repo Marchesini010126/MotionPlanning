@@ -1,9 +1,9 @@
 import pygame
 import sys
 import numpy as np
-import RobotPlanningRoutines.ObstaclesFactory as factory
-from   RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot#,#writepath2txt
-from   RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
+import packages.RobotPlanningRoutines.ObstaclesFactory as factory
+from   packages.RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot#,#writepath2txt
+from   packages.RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
 pygame.init()
@@ -31,44 +31,25 @@ target_index  = 0
 motionMap            = EnvMap(start,goal,dimensions)
 myrobot              = Robot(start[0],start[1],start[2],dimension=(45,25))
 
-# DEFINE MPC HORIZON
-myrobot.set_n_steps(4)
-myrobot.set_time_horizon(4)
-
-# DEFINE MPC OPTIMIZATION PENALTIES
-myrobot.set_control_penalty(np.eye(2)*1E1)
-myrobot.set_state_penalty(np.eye(3)*1E1)
-
 # DEFINE CAR MODEL
-myrobot.set_max_yaw_rate(60*np.pi/180) #rad/s
-myrobot.set_car_baseline(2)            #m
-myrobot.set_max_speed(40)              #m/s
-myrobot.set_min_speed(0)               #m/s
-phi = np.arctan(myrobot.maxyaw*myrobot.L /  myrobot.vmax)
-myrobot.set_max_steering(phi) #rad
-myrobot.init_car()
-
+myrobot.set_car_spec(vel_max=40,max_yaw_rate=60*np.pi/180)                  # m/s
+myrobot.set_baseline(baseline=45) # same as cal width
 
 #randomObstacles_list  = motionMap.createRandomMap(10,['polygon','rectangle'],minRadius=20,maxRadius = 40)
 
 
 #CREATE MAP
-randomObstacles_list  = motionMap.load_room_map("./maps/MAP7.txt")
+randomObstacles_list  = motionMap.load_room_map("./packages/maps/MAP7.txt")
 
 print(myrobot.radius)
 motionMap.add_obstacles(randomObstacles_list)
 motionMap.draw_obstacles()
 
-randomObstacles_list  = motionMap.load_room_map("maps/MAP3.txt")
-motionMap.add_obstacles(randomObstacles_list)
-free_obtacles = motionMap.check_feasibility()
-
-
 
 RRTpathFinder         = RRTplanner(start, goal,dimensions,randomObstacles_list,maxstep=maxRRTstep,robot=myrobot)
 
 motionMap.draw_obstacles()
-
+myrobot.initialise_sprite("./car_sprite.png")
 myrobot.reset_state(start)
 myrobot.draw_robot(motionMap.map)
 new_path=False
@@ -82,20 +63,18 @@ max_iterations = 5000
 number_of_paths = 1       # simple counter used to save each new path only once
 
 
-log_path_file = 'paths.txt'
-max_iterations = 5000
-number_of_paths = 1       # simple counter used to save each new path only once
-
-
-
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
            running = False
            pygame.quit()
            sys.exit()
-    
-    if  i <10000:      
+           
+    if not RRTpathFinder.isOnePathFound():
+               myrobot.update_sprite()
+               motionMap.map.blit(myrobot.image,myrobot.rect)
+               
+    if  i <max_iterations:      
         motionMap.draw_startgoal()
         
         nodes, parent = RRTpathFinder.expand()
@@ -106,9 +85,8 @@ while running:
         
         myrobot.reset_state(nodes[-1])
 
-        if not RRTpathFinder.isOnePathFound():
-               myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
         
+               
         print('Number of nodes : {}'.format(RRTpathFinder.numberOfNodes()))
         print('Iteration       : {}/{}'.format(i,max_iterations))
         if RRTpathFinder.isOnePathFound() and RRTpathFinder.get_number_of_paths_found()==number_of_paths:
@@ -117,13 +95,14 @@ while running:
         #myrobot.draw_robot(motionMap.map) #only if you want to draw the robot 
 
         
-        if RRTpathFinder.isOnePathFound():
-            current_best_path,total_cost = RRTpathFinder.getFinalPath()
-            motionMap.drawPath(current_best_path)
+        if RRTpathFinder.isOnePathFound() and RRTpathFinder.get_number_of_paths_found()==number_of_paths:
+              
+                current_best_path,current_best_actions,total_cost = RRTpathFinder.getFinalPath()
+                motionMap.drawPath(current_best_path)
+                number_of_paths += 1
         
-        #nodes, parent = RRTpathFinder.rebase()
-         
         i += 1
+    
     
     pygame.display.update()
     

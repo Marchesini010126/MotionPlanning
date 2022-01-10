@@ -1,6 +1,6 @@
 ## check functionality of dubins path function
 import numpy as np
-from RobotPlanningRoutines.Dubin import Dubin
+from packages.RobotPlanningRoutines.Dubin import Dubin
 
 np.random.seed()
 
@@ -12,9 +12,10 @@ point = [np.random.randint(-5,5), np.random.randint(-5,5)]
 
 radius = 1.5
 
-d = Dubin(q0, point, radius, 25)
+d= Dubin(q0, point, Rturn=radius, n_samples=25)
 
-paths,legths = d.make_path()
+paths,legths,actions = d.make_path()
 
 print(paths,legths)
+print(actions)
 d.plot()
