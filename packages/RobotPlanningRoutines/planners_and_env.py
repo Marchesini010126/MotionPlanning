@@ -609,7 +609,7 @@ class RRTplanner:
                 promising_nodes.append(i) 
         
         if len(promising_nodes)==0 :
-            raise ValueError('seach radius to small\nNo solution found inside the search radius')
+            raise ValueError('search radius to small\nNo solution found inside the search radius')
         
         nnear = promising_nodes[0]
         guess = promising_nodes.pop(0)
@@ -901,4 +901,32 @@ class RRTplanner:
             f.write('NO PATH TO GOAL FOUND\n')
             
         f.close()
+
+
+def readPathDataFromTxt(filepath):
+    
+    f       = open(filepath,'r')
+    lines   =  f.readlines()
+    counter = 0
+
+    save_output = [] # list of dictionaries
+    for line in lines[8:] :
         
+        if line.strip() =='NO PATH TO GOAL FOUND' :
+            save_output = {'path_number': None, 'length':None,'time':None}
+            
+        line = line.split(':')
+        if len(line)>1 :
+            if "Path number"==line[0].strip() :
+                save_output.insert(counter,{'path_number': float(line[1])})
+            if "Path length"==line[0].strip() :
+                save_output[counter]['length']=float(line[1])
+            if "Time required"==line[0].strip() :
+                save_output[counter]['time']=float(line[1].split('s')[0])
+                counter += 1
+                
+        f.close()
+        
+    return save_output
+
+results = readPathDataFromTxt("./OutputSimulations/Simulation0.txt")

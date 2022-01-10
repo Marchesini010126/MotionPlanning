@@ -35,11 +35,10 @@ myrobot              = Robot(start[0],start[1],start[2],dimension=(45,25))
 myrobot.set_car_spec(vel_max=40,max_yaw_rate=60*np.pi/180)                  # m/s
 myrobot.set_baseline(baseline=45) # same as cal width
 
-#randomObstacles_list  = motionMap.createRandomMap(10,['polygon','rectangle'],minRadius=20,maxRadius = 40)
-
+#randomObstacles_list  = motionMap.createRandomMap(20,['polygon','rectangle'],minRadius=20,maxRadius = 40)
 
 #CREATE MAP
-randomObstacles_list  = motionMap.load_room_map("./packages/maps/MAP7.txt")
+randomObstacles_list  = motionMap.load_room_map("./packages/maps/MAP1.txt")
 
 print(myrobot.radius)
 motionMap.add_obstacles(randomObstacles_list)
@@ -52,6 +51,8 @@ motionMap.draw_obstacles()
 myrobot.initialise_sprite("./car_sprite.png")
 myrobot.reset_state(start)
 myrobot.draw_robot(motionMap.map)
+RRTpathFinder.activate_rebasing(500) # actvates rebasing   good between 100-500
+
 new_path=False
 
 goalArea = pygame.Rect((goal[0]-maxRRTstep/2,goal[1]-maxRRTstep/2),(maxRRTstep,maxRRTstep))
@@ -71,8 +72,10 @@ while running:
            sys.exit()
            
     if not RRTpathFinder.isOnePathFound():
-               myrobot.update_sprite()
-               motionMap.map.blit(myrobot.image,myrobot.rect)
+               #myrobot.update_sprite()
+               #motionMap.map.blit(myrobot.image,myrobot.rect)
+               myrobot.draw_robot(motionMap.map)
+              
                
     if  i <max_iterations:      
         motionMap.draw_startgoal()
