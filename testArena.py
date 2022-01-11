@@ -2,7 +2,7 @@ import pygame
 import sys
 import numpy as np
 import packages.RobotPlanningRoutines.ObstaclesFactory as factory
-from   packages.RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot#,#writepath2txt
+from   packages.RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
 from   packages.RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
 
@@ -15,8 +15,8 @@ pygame.init()
 
 
 dimensions = (1200,600)    # map dimension
-start      = (100, 50,0)  # start configuration
-goal       = (1100, 500,0) # goal configuration
+start      = (300, 300,0)  # start configuration
+goal       = (900, 300,0) # goal configuration
 
 obsNum     = 200           # number of obstacles
 maxRRTstep = 70           # define step in the RRT search
@@ -36,10 +36,10 @@ myrobot.set_baseline(baseline=45) # same as cal width
 myrobot.set_car_spec(vel_max=40,max_yaw_rate=60*np.pi/180)                  # m/s
 
 
-#randomObstacles_list  = motionMap.createRandomMap(20,['polygon','rectangle'],minRadius=20,maxRadius = 40)
-
+randomObstacles_list  = motionMap.createRandomMap(20,['polygon','rectangle'],minRadius=20,maxRadius = 40)
+randomObstacles_list  = [factory.createRectangle(200,20,np.array([700,300]))]
 #CREATE MAP
-randomObstacles_list  = motionMap.load_room_map("./packages/maps/MAP1.txt")
+#randomObstacles_list  = motionMap.load_room_map("./packages/maps/MAP1.txt")
 
 print(myrobot.radius)
 motionMap.add_obstacles(randomObstacles_list)
@@ -53,6 +53,7 @@ myrobot.initialise_sprite("./car_sprite.png")
 myrobot.reset_state(start)
 myrobot.draw_robot(motionMap.map)
 RRTpathFinder.activate_rebasing(500) # actvates rebasing   good between 100-500
+RRTpathFinder.deactivate_GJK()
 
 new_path=False
 
@@ -72,10 +73,8 @@ while running:
            pygame.quit()
            sys.exit()
            
-    if not RRTpathFinder.isOnePathFound():
-               #myrobot.update_sprite()
-               #motionMap.map.blit(myrobot.image,myrobot.rect)
-               myrobot.draw_robot(motionMap.map)
+   
+    myrobot.draw_robot(motionMap.map)
               
                
     if  i <max_iterations:      

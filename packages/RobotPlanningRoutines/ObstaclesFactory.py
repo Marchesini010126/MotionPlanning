@@ -27,7 +27,7 @@ from   random import randint
 # note : for circular obstacles the vertices variable is equal to the center location
 #        and the bounding radious is euqal to the radious itself
 
-def createNpolygon(N,r,center=np.array([0,0]),color=(250,0,0)) :
+def createNpolygon(N,r,center=np.array([0.,0.]),color=(250,0,0)) :
     
     
     # ----------DESCRIPTION--------------
@@ -47,10 +47,11 @@ def createNpolygon(N,r,center=np.array([0,0]),color=(250,0,0)) :
     yc = center[1]
     
     polygon=np.array([[xc+r*np.cos(2*np.pi/N*ii),yc+r*np.sin(2*np.pi/N*ii)] for ii in range(N)])
-    obstacle = {'center': center,'vertices':polygon,'color':color,'radius':r,'type':'polygon'}
+    
+    obstacle = {'center': center,'vertices':polygon,'color':color,'radius':float(r),'type':'polygon'}
     return obstacle
 
-def createRectangle(width,height,center=np.array([0,0]),color=(250,0,0)) :
+def createRectangle(width,height,center=np.array([0.,0.]),color=(250,0,0)) :
     
     # ----------DESCRIPTION--------------
     # creates list of vertices of a rectangle
@@ -76,11 +77,11 @@ def createRectangle(width,height,center=np.array([0,0]),color=(250,0,0)) :
     
     rad  = np.sqrt((width/2)**2+(height/2)**2)
     rect = np.array([a1,a2,a3,a4])
-    obstacle = {'center': np.array([xc,yc]),'vertices':rect,'color':color,'radius':rad,'type':'polygon'}
+    obstacle = {'center': np.array([xc,yc]),'vertices':rect,'color':color,'radius':float(rad),'type':'polygon'}
     return obstacle 
 
 
-def createCircle(radius,center=np.array([0,0]),color=(250,0,0)) :
+def createCircle(radius,center=np.array([0.,0.]),color=(250,0,0)) :
     # ----------DESCRIPTION--------------
     # creates circular obstacles
     #
@@ -90,7 +91,7 @@ def createCircle(radius,center=np.array([0,0]),color=(250,0,0)) :
     #  color                           ---> touple  (3,)
     # -----------OUTPUT------------------
     # obsracle dictionary
-    obstacle = {'center': np.array([center[0],center[1]]),'vertices':np.array([radius]),'color':color,'radius':radius,'type':'circle'}
+    obstacle = {'center': np.array([center[0],center[1]]),'vertices':np.array([radius]),'color':color,'radius':float(radius),'type':'circle'}
     return obstacle
 def rotationMatrix(angle) :
     # ----------DESCRIPTION--------------

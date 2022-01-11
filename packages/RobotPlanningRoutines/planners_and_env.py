@@ -1,11 +1,8 @@
 import pygame
-import sys,os
+from itertools import compress
 import numpy as np
 import random
-from   random import randint
-from scipy.spatial.kdtree import minkowski_distance
 from   casadi import *
-import matplotlib.pyplot as plt
 import time
 
 if __name__ == '__main__' :
@@ -26,7 +23,7 @@ class EnvMap():
         self.goal            = goal    #(x,y,theta)   configuration
         self.MapDimensions   = MapDimensions
         self.Mapw, self.Maph = self.MapDimensions
-
+        self.seed            = 0 # seed for random obstacles [not set as defauls]
         # Window settings
         self.MapWindowName = "RRT Path Planning"
         pygame.display.set_caption(self.MapWindowName)
@@ -77,9 +74,9 @@ class EnvMap():
         # -----------OUTPUT------------------
         # update state 
         
-        self.obstacle_list=new_list_of_obstacles
+        self.obstacles=new_list_of_obstacles
     
-    def check_feasibility(self,robot_radius=0):
+    def CleanAreaAroundRobot(self):
         # eliminated the obstacles that are 
         # exactly on the goal or the start position
         # retruns a list to update the EnvMap class
@@ -88,26 +85,30 @@ class EnvMap():
         # every possible tilted orientation 
         # at a given position will be fine
         obs   = self.obstacles.copy()
+        index = [True]*len(obs)
         start = np.asarray(self.start[:2],dtype=np.float32)
         goal  = np.asarray(self.goal[:2],dtype=np.float32)
-
+        
         for n,obstacle in enumerate(obs) :
             
-            center    = np.asarray(obstacle["center"],np.float64)
-
+            center        = np.asarray(obstacle["center"],np.float64)
             dist2start    = np.sqrt(np.sum((center-start)**2))
             dist2goal     = np.sqrt(np.sum((center-goal)**2))
             
-            check1        = dist2start<robot_radius+obstacle['radius']
-            check2        = dist2goal<robot_radius+obstacle['radius']
+            check1        = dist2start<2.5*obstacle['radius']
+            check2        = dist2goal<2.5*obstacle['radius']
             
-
             #safety limit of three radius
             if check1  or check2   :
-                self.obstacles.pop(n)
+                index[n] = False
+                self.obstacles[n]['color'] = (0,0,250)
         
+        self.obstacles = list(compress(self.obstacles, index))
         return self.obstacles
         
+    
+    def set_seed(self,seed):
+        self.seed = seed
         
     def get_centers(self):
         # ----------DESCRIPTION--------------
@@ -159,7 +160,7 @@ class EnvMap():
         return new.T
     
     
-    def createRandomMap(self,nObs,type,minRadius=20,maxRadius = 50,maxFaces = 6):
+    def createRandomMap(self,nObs,type,minRadius=20,maxRadius = 50.,maxFaces = 6.):
         # ----------DESCRIPTION--------------
         # creates set of random obstacles
         # of a fiven type
@@ -180,14 +181,17 @@ class EnvMap():
         # update state self.obstcle_list
         
         # specify bounds on the obstacles
+        
+        
+        
         maxFaces = int(maxFaces) 
         nObs     = int(nObs)
         obs_list = []
         for n in range(nObs) :
             
             obstype  = random.choice(type)
-            rad      = random.randrange(minRadius,maxRadius)
-            center   = np.array([random.randint(0,self.Mapw),random.randint(0,self.Maph)])
+            rad      = float(random.randrange(minRadius,maxRadius))
+            center   = np.array([float(random.randint(0,self.Mapw)),float(random.randint(0,self.Maph))])
             
             if obstype == 'polygon' :
                 nfaces   = random.randint(3,maxFaces) 
@@ -446,6 +450,7 @@ class RRTplanner:
         self.mapw, self.maph = MapDimensions
         self.limits          = (self.mapw,self.maph)
         self.maxstep         = maxstep
+        self.GJKactive       = True
         
         # initialise tree
         self.nodes  = [start]  # List of tuples representing C space (x, y, theta)
@@ -485,6 +490,8 @@ class RRTplanner:
         """set map name"""
         self.map_name = name
     
+    def deactivate_GJK(self):
+        self.GJKactive = False
     
     def set_path_resolution(self,res):
         """set resolution (number of points) for each dubin path"""
@@ -680,9 +687,14 @@ class RRTplanner:
             # 2) GJK finer collision checks 
             
             if CollisionChecks.CircleCollision(obstacle['radius'],self.robot.radius,obstacle['center'],self.robot.get_current_position()) :
-                if CollisionChecks.GJK(self.robot.get_current_vertices(),obs_vert): 
+                if self.GJKactive: 
+                   if CollisionChecks.GJK(self.robot.get_current_vertices(),obs_vert):
+                       self.removeNode(n)
+                       return False
+                else :
                    self.removeNode(n)
                    return False
+                    
         return True
 
     def crossObstacle(self):
@@ -709,8 +721,12 @@ class RRTplanner:
                 # 1) circle collsion
                 # 2) GJK finer collision checks
                 if CollisionChecks.CircleCollision(obstacle['radius'],self.robot.radius,obstacle['center'],self.robot.get_current_position()) :
-                   if CollisionChecks.GJK(self.robot.get_current_vertices(),obs_vert): 
-                      return True,final_state
+                    if self.GJKactive: 
+                      if CollisionChecks.GJK(self.robot.get_current_vertices(),obs_vert):
+                       return True,final_state
+                    else :
+                       return True,final_state
+                    
         
         
         return False,final_state
@@ -863,7 +879,7 @@ class RRTplanner:
         f.write('----------------------------'+'\n')
         f.write('RRT search Summary          '+'\n')
         f.write('----------------------------'+'\n')
-        f.write('Map Name               : {}'.format(self.number_of_path_found)+'\n')
+        f.write('Map Name               : {}'.format(self.map_name)+'\n')
         f.write('Total paths found      : {}'.format(self.number_of_path_found)+'\n')
         f.write('Total number of nodes  : {}'.format(self.numberOfNodes())+'\n')
         f.write('Total elapsed time     : {} s'.format(self.time_elapsed)+'\n')
@@ -873,9 +889,10 @@ class RRTplanner:
             f.write('Solver                 : {} '.format('RRT standard')+'\n')
         
         if len(self.start2goal_paths_lists) >0 : 
+            counter = 0
             for pathspec in  self.start2goal_paths_lists :
                 
-                counter = 0
+                
                 path   = pathspec['path']
                 length = pathspec['length']
                 time   = pathspec['time']
@@ -904,7 +921,10 @@ class RRTplanner:
 
 
 def readPathDataFromTxt(filepath):
+    """read output from a standard path txt file as computed by the RRT planner class"""
+    """dictionary with solutions returned in descending order from less optimal to optimal"""
     
+    """sol = [{'path_number': ..., 'length':....,'time':....,'planner':....}]"""
     f       = open(filepath,'r')
     lines   =  f.readlines()
     counter = 0
@@ -913,12 +933,12 @@ def readPathDataFromTxt(filepath):
     for line in lines[8:] :
         
         if line.strip() =='NO PATH TO GOAL FOUND' :
-            save_output = {'path_number': None, 'length':None,'time':None}
+            save_output = [{'path_number': None, 'length':None,'time':None,'planner':lines[7].split(':')[1].strip()}]
             
         line = line.split(':')
         if len(line)>1 :
             if "Path number"==line[0].strip() :
-                save_output.insert(counter,{'path_number': float(line[1])})
+                save_output.insert(counter,{'path_number': float(line[1]),'planner':lines[7].split(':')[1].strip()})
             if "Path length"==line[0].strip() :
                 save_output[counter]['length']=float(line[1])
             if "Time required"==line[0].strip() :
@@ -929,4 +949,4 @@ def readPathDataFromTxt(filepath):
         
     return save_output
 
-results = readPathDataFromTxt("./OutputSimulations/Simulation0.txt")
+

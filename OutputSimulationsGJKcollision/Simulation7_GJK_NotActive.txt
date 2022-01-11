@@ -1,0 +1,10 @@
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : Random
+Total paths found      : 0
+Total number of nodes  : 530
+Total elapsed time     : 51.705719232559204 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND

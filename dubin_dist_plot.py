@@ -1,12 +1,12 @@
 from packages.RobotPlanningRoutines.Dubin import Dubin
-from packages.RobotPlanningRoutines.planners_and_env import Robot
+from packages.RobotPlanningRoutines.planners_and_env import Robot,readPathDataFromTxt
 import numpy as np
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import matplotlib.pyplot as plt
 
 Rturn = 10
-start      = (0, 0,90)  # start configuration
+start      = (0, 0,np.pi)  # start configuration
 
 myrobot              = Robot(start[0],start[1],start[2],dimension=(45,25))
 
@@ -40,15 +40,16 @@ surf = ax.plot_surface(x, y, grid, cmap=cm.coolwarm,
 ax.zaxis.set_major_locator(LinearLocator(10))
 # A StrMethodFormatter is used automatically
 ax.zaxis.set_major_formatter('{x:.02f}')
-
+ax.set_xlabel('x [m]')
+ax.set_ylabel('y [m]')
+ax.tick_params(axis='z', which='major', pad=15)
 # Add a color bar which maps values to colors.
-fig.colorbar(surf, shrink=0.5, aspect=5)
-
+fig.colorbar(surf, shrink=0.5, aspect=5,label='dist [m]')
 plt.show()
 
 plt.contour(x,y,grid)
 plt.show()
-       
+fig.savefig('DubinDist.png')    
        
 
 

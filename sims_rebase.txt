@@ -1,0 +1,685 @@
+2000 iterations, rebase=500, 50 simulations----------------------------
+
+
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 808
+Total elapsed time     : 151.7635955810547 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1322.850077251838
+Time required : 113.14971542358398 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 899
+Total elapsed time     : 152.08252620697021 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 757
+Total elapsed time     : 148.51137804985046 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 2
+Total paths found      : 2
+Total number of nodes  : 699
+Total elapsed time     : 152.57162237167358 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1326.0604282972256
+Time required : 81.43805623054504 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1295.1550084488763
+Time required : 103.09320306777954 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 2
+Total paths found      : 2
+Total number of nodes  : 727
+Total elapsed time     : 138.19417929649353 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1359.2599770900015
+Time required : 111.32918620109558 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1323.75480429052
+Time required : 118.28817105293274 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 2
+Total paths found      : 2
+Total number of nodes  : 790
+Total elapsed time     : 194.07217812538147 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1441.2619245669243
+Time required : 53.057523012161255 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1416.8721784509826
+Time required : 64.85951733589172 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 834
+Total elapsed time     : 193.4736363887787 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1293.6133564778208
+Time required : 154.64854669570923 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 876
+Total elapsed time     : 205.7021508216858 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1326.591966594365
+Time required : 130.05161714553833 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 666
+Total elapsed time     : 167.74829506874084 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 807
+Total elapsed time     : 182.59297561645508 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1258.5755493108466
+Time required : 180.5622799396515 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 866
+Total elapsed time     : 192.06342959403992 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1275.2816906429678
+Time required : 100.07249069213867 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 803
+Total elapsed time     : 180.62185287475586 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1382.5436259714993
+Time required : 40.15863084793091 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 2
+Total paths found      : 2
+Total number of nodes  : 829
+Total elapsed time     : 181.1477906703949 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1318.140316759843
+Time required : 54.12287926673889 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1271.170335398859
+Time required : 150.22098565101624 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 778
+Total elapsed time     : 188.86238956451416 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1316.631059397054
+Time required : 139.5266125202179 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 3
+Total paths found      : 3
+Total number of nodes  : 733
+Total elapsed time     : 185.85372185707092 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1392.6598721346975
+Time required : 57.95743155479431 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1385.9765607622862
+Time required : 58.62364959716797 s
+>>>> Nodes
+----------------------------
+Path number   : 2
+Path length   : 1325.8212540548816
+Time required : 157.79630875587463 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 784
+Total elapsed time     : 191.71036529541016 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1290.3769626044193
+Time required : 154.992826461792 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 885
+Total elapsed time     : 212.1910276412964 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1286.8595630999484
+Time required : 152.39652299880981 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 805
+Total elapsed time     : 166.26016306877136 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1325.1696227073767
+Time required : 23.677486658096313 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 742
+Total elapsed time     : 175.52485942840576 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 695
+Total elapsed time     : 195.24642491340637 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1300.554882283602
+Time required : 114.31075406074524 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 2
+Total paths found      : 2
+Total number of nodes  : 860
+Total elapsed time     : 193.2699773311615 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1304.8126577058558
+Time required : 148.8421516418457 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1279.7858439317577
+Time required : 167.60107612609863 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 2
+Total paths found      : 2
+Total number of nodes  : 821
+Total elapsed time     : 192.8871932029724 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1356.2696744763875
+Time required : 45.4058678150177 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1334.7572854422724
+Time required : 188.63881278038025 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 858
+Total elapsed time     : 207.80496907234192 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1384.1108158623333
+Time required : 32.420403718948364 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 928
+Total elapsed time     : 206.07535219192505 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1332.3337681762857
+Time required : 41.29276657104492 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 923
+Total elapsed time     : 195.8340985774994 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1333.6457800717812
+Time required : 48.91020202636719 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 922
+Total elapsed time     : 218.2832202911377 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1342.1087727569338
+Time required : 123.1493821144104 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 551
+Total elapsed time     : 158.96793508529663 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 717
+Total elapsed time     : 128.40932059288025 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1327.6860673864699
+Time required : 103.32772326469421 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 856
+Total elapsed time     : 134.6296045780182 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1317.3432738400534
+Time required : 19.303966760635376 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 3
+Total paths found      : 3
+Total number of nodes  : 836
+Total elapsed time     : 131.3677487373352 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1436.0332585987207
+Time required : 19.300549268722534 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1323.6697802033475
+Time required : 30.120994329452515 s
+>>>> Nodes
+----------------------------
+Path number   : 2
+Path length   : 1314.6097139808303
+Time required : 67.79398465156555 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 656
+Total elapsed time     : 117.69737362861633 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1324.6825722812964
+Time required : 62.73064112663269 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 781
+Total elapsed time     : 128.13022208213806 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 806
+Total elapsed time     : 127.06093573570251 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1334.6381344821377
+Time required : 59.38747596740723 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 765
+Total elapsed time     : 124.61131286621094 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 818
+Total elapsed time     : 131.14664435386658 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1311.0859752569963
+Time required : 81.69920516014099 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 747
+Total elapsed time     : 124.86009120941162 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1311.824162235669
+Time required : 69.08245587348938 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 809
+Total elapsed time     : 133.06223845481873 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1334.252661764811
+Time required : 42.73648118972778 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 740
+Total elapsed time     : 123.13881850242615 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 895
+Total elapsed time     : 135.55886340141296 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1268.0415738729241
+Time required : 20.358594179153442 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 701
+Total elapsed time     : 120.45488500595093 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 784
+Total elapsed time     : 127.93435621261597 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1306.4894107448415
+Time required : 35.28279995918274 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 3
+Total paths found      : 3
+Total number of nodes  : 842
+Total elapsed time     : 129.71954345703125 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1350.4503870126666
+Time required : 22.9674289226532 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1330.7023064057541
+Time required : 26.905531883239746 s
+>>>> Nodes
+----------------------------
+Path number   : 2
+Path length   : 1295.1845364532142
+Time required : 83.94199323654175 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 829
+Total elapsed time     : 130.5551037788391 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 828
+Total elapsed time     : 129.31013679504395 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1299.9169629625535
+Time required : 86.91693949699402 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 0
+Total paths found      : 0
+Total number of nodes  : 926
+Total elapsed time     : 139.54091954231262 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 678
+Total elapsed time     : 117.35489392280579 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1374.8830213003096
+Time required : 41.99989104270935 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 788
+Total elapsed time     : 124.74146151542664 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1301.5349872116667
+Time required : 114.80421876907349 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 711
+Total elapsed time     : 120.15528225898743 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1337.7543438237262
+Time required : 91.3128433227539 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 1
+Total paths found      : 1
+Total number of nodes  : 757
+Total elapsed time     : 127.46229386329651 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1347.2709221345945
+Time required : 113.85830688476562 s
+>>>> Nodes
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : 2
+Total paths found      : 2
+Total number of nodes  : 878
+Total elapsed time     : 133.07486176490784 s
+Solver                 : RRTstar 
+----------------------------
+Path number   : 0
+Path length   : 1314.5471433454265
+Time required : 55.018800258636475 s
+>>>> Nodes
+----------------------------
+Path number   : 1
+Path length   : 1257.797185436936
+Time required : 72.83920001983643 s
+>>>> Nodes

@@ -1,0 +1,10 @@
+----------------------------
+RRT search Summary          
+----------------------------
+Map Name               : ./packages/maps/MAP7.txt
+Total paths found      : 0
+Total number of nodes  : 1308
+Total elapsed time     : 239.05907607078552 s
+Solver                 : RRTstar 
+----------------------------
+NO PATH TO GOAL FOUND
