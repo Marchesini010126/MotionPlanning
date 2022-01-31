@@ -1,9 +1,12 @@
 import pygame
-import sys
+import sys,os
 import numpy as np
-import packages.RobotPlanningRoutines.ObstaclesFactory as factory
+
+sys.path.append(os.path.abspath('..'))
+
+import packages.RobotPlanningRoutines.obstacles_factory as factory
 from   packages.RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
-from   packages.RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
+from   packages.RobotPlanningRoutines.collision_checks import CircleCollision,GJK
 import time
 
 pygame.init()
@@ -49,11 +52,11 @@ motionMap.draw_obstacles()
 RRTpathFinder         = RRTplanner(start, goal,dimensions,randomObstacles_list,maxstep=maxRRTstep,robot=myrobot)
 
 motionMap.draw_obstacles()
-myrobot.initialise_sprite("./car_sprite.png")
+myrobot.initialise_sprite("./car_images/car_sprite.png")
 myrobot.reset_state(start)
 myrobot.draw_robot(motionMap.map)
 RRTpathFinder.activate_rebasing(500) # actvates rebasing   good between 100-500
-RRTpathFinder.deactivate_GJK()
+#RRTpathFinder.deactivate_GJK()
 
 new_path=False
 

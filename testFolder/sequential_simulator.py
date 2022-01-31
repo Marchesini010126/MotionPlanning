@@ -2,10 +2,13 @@ import pygame
 import sys,os
 import numpy as np
 import random
-import packages.RobotPlanningRoutines.ObstaclesFactory as factory
-from   packages.RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
-from   packages.RobotPlanningRoutines.CollisionChecks import CircleCollision,GJK
 import time
+
+sys.path.append(os.path.abspath('..'))
+
+import packages.RobotPlanningRoutines.obstacles_factory as factory
+from   packages.RobotPlanningRoutines.planners_and_env import EnvMap,RRTplanner,Robot
+from   packages.RobotPlanningRoutines.collision_checks import CircleCollision,GJK
 pygame.init()
 #pygame.font.init()
 #myfont = pygame.font.SysFont('Comic Sans MS', 30)

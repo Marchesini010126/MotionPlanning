@@ -6,11 +6,11 @@ from matplotlib.collections import PatchCollection
 import sys,os
 
 
-sys.path.append(os.path.abspath('../packages/RobotPlanningRoutines'))
+sys.path.append(os.path.abspath('..'))
 
-import packages.RobotPlanningRoutines.ObstaclesFactory as factory
-from packages.RobotPlanningRoutines.CollisionChecks  import CircleCollision
-from packages.RobotPlanningRoutines.CollisionChecks  import GJK,minkowskiDifference
+import packages.RobotPlanningRoutines.obstacles_factory as factory
+from packages.RobotPlanningRoutines.collision_checks  import CircleCollision
+from packages.RobotPlanningRoutines.collision_checks  import GJK,minkowskiDifference
 
 
 
