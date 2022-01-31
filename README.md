@@ -66,13 +66,15 @@ This robot model is used as input to the RRTplanner so that dubins path could be
 
 Check the simple script ``TestArena.py`` in order to get an idea of how can you load maps (both random maps and pre-computed structured maps).
 
-# A nice video showing the result of our project
+# Video result
 
 
 
 https://user-images.githubusercontent.com/71294988/149579085-4589d134-c944-4b85-a55e-130f899ebf50.mp4
 
-
+# Aknowledgments
+Thanks to Algorobotics for inspiring the RRT algorithm structure 
+https://www.youtube.com/watch?v=Tllz7Ox2B3g
 
 
 
