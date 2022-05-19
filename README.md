@@ -31,7 +31,7 @@ For more info on GJK algorithm check the following links
 
 [GJK wikipidia] (https://en.wikipedia.org/wiki/Gilbert%E2%80%93Johnson%E2%80%93Keerthi_distance_algorithm)
 
-**module2** ``ObstaclesFactory.py``
+**module3** ``ObstaclesFactory.py``
 
 
 | functions       | Description                                |
@@ -43,32 +43,7 @@ For more info on GJK algorithm check the following links
 | rotation        | rotatetes a polygon of a given angle       |
 
 
-How is an obstacle defined?
-
-An obstacle is a dictionary constaing the following key/item pairs
-
-
-| Key        | item                                                                            |
-|------------|---------------------------------------------------------------------------------|
-| 'center'   | obstacle center coordinates                                                     |
-| 'vertices' | list of vertices for the polygon  note : equal to radius for circular obstacles |
-| 'color'    | RGB color        (tuple)                                                               |
-| 'radius'   | bounding radius of the polygon                                                  |
-| 'type'     | 'polygon' or 'circle'                                                           |
-
-
-How is an robot defined?
-
-The robot class initialise a simple robot that can be used to follow the path created by planning algoritm. The idea behind the class in the following.
-
-This robot model is used as input to the RRTplanner so that dubins path could be computed accoding to the minimum trun radius of the robot and collision checking functions can take the dimensions of the car into account. The planner also computes the inputs required to follow the path and the actuation time. The robot model is a simple non-differential car kinematic model.
-
-
-Check the simple script ``TestArena.py`` in order to get an idea of how can you load maps (both random maps and pre-computed structured maps).
-
 # Video result
-
-
 
 https://user-images.githubusercontent.com/71294988/149579085-4589d134-c944-4b85-a55e-130f899ebf50.mp4
 
